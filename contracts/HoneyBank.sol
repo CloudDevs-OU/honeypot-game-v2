@@ -64,24 +64,56 @@ contract HoneyBank is IHoneyBank, AccessControl {
         emit SellTokens(msg.sender, tokensAmount, stableAmount, rate, tokensFee);
     }
 
+    /**
+     * @dev Add tokens to account balance
+     * @notice Can be accessed only by BANKER_ROLE
+     *
+     * @param to account for getting tokens
+     * @param amount tokens amount that will be credited
+     */
     function add(address to, uint amount) public onlyRole(BANKER_ROLE) {
         token.mintTokens(to, amount);
     }
 
+    /**
+     * @dev Subtract tokens from account balance
+     * @notice Can be accessed only by BANKER_ROLE
+     *
+     * @param from account from burn tokens
+     * @param amount tokens amount that needs to be debited
+     */
     function subtract(address from, uint amount) public onlyRole(BANKER_ROLE) {
         require(token.balanceOf(from) >= amount, "Not enough tokens");
         token.burnTokens(from, amount);
     }
 
-    function balanceOf(address account) public returns(uint) {
+    /**
+     * @dev Get tokens balance of account
+     * @notice Can be accessed only by contract admin
+     *
+     * @param account balance owner
+     */
+    function balanceOf(address account) public view returns(uint) {
         return token.balanceOf(account);
     }
 
+    /**
+     * @dev Update swap rate
+     * @notice Can be accessed only by contract admin
+     *
+     * @param newRate new rate that must be used for swap calc
+     */
     function setRate(uint newRate) public onlyRole(DEFAULT_ADMIN_ROLE) {
         emit RateUpdate(rate, newRate);
         rate = newRate;
     }
 
+    /**
+     * @dev Update swap fee
+     * @notice Can be accessed only by contract admin
+     *
+     * @param newSwapFee new swap fee that must be applied to all swaps
+     */
     function setSwapFee(uint newSwapFee) public onlyRole(DEFAULT_ADMIN_ROLE) {
         emit SwapFeeUpdate(swapFee, newSwapFee);
         swapFee = newSwapFee;
