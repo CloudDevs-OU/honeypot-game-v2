@@ -1,0 +1,19 @@
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### VS Code ###
+.vscode/
+
+### Node JS ###
+/node_modules/**
+
+### Hardhat ###
+cache
+artifacts
+
+### Custom ###
+prod-secrets.json
+addresses.json
