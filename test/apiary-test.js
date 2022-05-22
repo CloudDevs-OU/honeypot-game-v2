@@ -6,7 +6,6 @@ describe("ApiaryLand", async function() {
     before(async function() {
         const ApiaryLand = await ethers.getContractFactory("ApiaryLand");
         land = await ApiaryLand.deploy();
-
     })
 
     it("should set admin", async function() {
