@@ -219,12 +219,7 @@ contract ApiaryAccounting {
     ) public view returns(uint) {
         uint notDeferredProfit = calcPureProfit(bees, items, setId, block.timestamp - info[owner].lastDeferredPayoutTimestamp);
         // Apply mood factor
-        int mood = getApiaryMood(owner);
-        if (mood > 0) {
-            return (notDeferredProfit + info[owner].deferredProfit) * (10000 + uint(mood)) / 10000;
-        } else {
-            return (notDeferredProfit + info[owner].deferredProfit) * (10000 - uint(-mood)) / 10000;
-        }
+        return (notDeferredProfit + info[owner].deferredProfit) * uint(int(10000) + getApiaryMood(owner)) / 10000;
     }
 
     /**
