@@ -101,4 +101,64 @@ describe("ApiaryLand", async function() {
         await expect(land.addBees(owner.address, [6], [100])).to.revertedWith('Not enough slots');
     })
 
+    it("should fail to set items with message 'Only admin'", async function() {
+        const [,owner] = await ethers.getSigners();
+        await expect(land.connect(owner).setItems(owner.address, [1], [1])).to.revertedWith('Only admin');
+    })
+
+    it("should fail to set items with message 'Must be apiary owner'", async function() {
+        const [,,nonRegisteredAccount] = await ethers.getSigners();
+        await expect(land.setItems(nonRegisteredAccount.address, [1], [1])).to.revertedWith('Must be apiary owner');
+    })
+
+    it("should by default set item ids to 0", async function() {
+        const [,owner] = await ethers.getSigners();
+        const apiary = await land.getApiary(owner.address);
+        expect(apiary.items[0]).to.eq(0);
+        expect(apiary.items[1]).to.eq(0);
+        expect(apiary.items[2]).to.eq(0);
+        expect(apiary.items[3]).to.eq(0);
+        expect(apiary.items[4]).to.eq(0);
+        expect(apiary.items[5]).to.eq(0);
+        expect(apiary.items[6]).to.eq(0);
+    })
+
+    it("should successfully set item ids", async function() {
+        const [,owner] = await ethers.getSigners();
+        await land.setItems(owner.address, [1, 4, 7], [5, 9, 1]);
+        const apiary = await land.getApiary(owner.address);
+        expect(apiary.items[0]).to.eq(5);
+        expect(apiary.items[1]).to.eq(0);
+        expect(apiary.items[2]).to.eq(0);
+        expect(apiary.items[3]).to.eq(9);
+        expect(apiary.items[4]).to.eq(0);
+        expect(apiary.items[5]).to.eq(0);
+        expect(apiary.items[6]).to.eq(1);
+    })
+
+    it("should successfully update item ids", async function() {
+        const [,owner] = await ethers.getSigners();
+        await land.setItems(owner.address, [1, 3, 7], [3, 4, 5]);
+        const apiary = await land.getApiary(owner.address);
+        expect(apiary.items[0]).to.eq(3);
+        expect(apiary.items[1]).to.eq(0);
+        expect(apiary.items[2]).to.eq(4);
+        expect(apiary.items[3]).to.eq(9);
+        expect(apiary.items[4]).to.eq(0);
+        expect(apiary.items[5]).to.eq(0);
+        expect(apiary.items[6]).to.eq(5);
+    })
+
+    it("should successfully reset item ids", async function() {
+        const [,owner] = await ethers.getSigners();
+        await land.setItems(owner.address, [1, 3, 7], [0, 0, 0]);
+        const apiary = await land.getApiary(owner.address);
+        expect(apiary.items[0]).to.eq(0);
+        expect(apiary.items[1]).to.eq(0);
+        expect(apiary.items[2]).to.eq(0);
+        expect(apiary.items[3]).to.eq(9);
+        expect(apiary.items[4]).to.eq(0);
+        expect(apiary.items[5]).to.eq(0);
+        expect(apiary.items[6]).to.eq(0);
+    })
 })

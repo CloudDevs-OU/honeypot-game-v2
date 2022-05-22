@@ -8,6 +8,7 @@ contract ApiaryLand {
         address owner;
         uint slots;
         uint[7] bees;
+        uint[7] items;
     }
 
     // Constants
@@ -61,6 +62,21 @@ contract ApiaryLand {
         }
 
         require(apiary[owner].slots >= getUsedSlots(owner), "Not enough slots");
+    }
+
+    /**
+     * @dev Add items to owner's apiary
+     * @notice Can be accessed only by contract admin
+     *
+     * @param owner Apiary owner
+     * @param beeIds array of bee ids
+     * @param itemIds array of item ids
+     */
+    function setItems(address owner, uint[] memory beeIds, uint[] memory itemIds) public onlyAdmin hasApiary(owner) {
+        require(beeIds.length == itemIds.length, "'beeIds' length not equal to 'itemIds' length");
+        for(uint i; i < beeIds.length; i++) {
+            apiary[owner].items[beeIds[i] - 1] = itemIds[i];
+        }
     }
 
     /**
