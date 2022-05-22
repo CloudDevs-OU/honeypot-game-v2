@@ -65,7 +65,7 @@ contract ApiaryLand {
     }
 
     /**
-     * @dev Add items to owner's apiary
+     * @dev Set items to owner's apiary
      * @notice Can be accessed only by contract admin
      *
      * @param owner Apiary owner
