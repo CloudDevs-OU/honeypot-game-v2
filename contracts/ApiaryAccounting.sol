@@ -120,6 +120,24 @@ contract ApiaryAccounting {
     }
 
     /**
+     * @dev Function should be triggered before owner's apiary state changed
+     * in order to save deferred profit. It needs for correct calculation of profit that available for claiming.
+     *
+     * @notice Can be accessed only by contract admin
+     *
+     * @param owner Apiary owner
+     */
+    function beforeApiaryStateChanged(
+        address owner,
+        uint[7] memory bees,
+        uint[7] memory items,
+        uint setId
+    ) public onlyAdmin hasRegistered(owner) {
+        info[owner].deferredProfit += calcPureProfit(bees, items, setId, block.timestamp - info[owner].lastDeferredPayoutTimestamp);
+        info[owner].lastDeferredPayoutTimestamp = block.timestamp;
+    }
+
+    /**
      * @dev Get bee daily profits
      * @return array of bee daily profits (index = beeId - 1)
      */
