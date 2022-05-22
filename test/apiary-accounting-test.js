@@ -19,6 +19,8 @@ describe("ApiaryAccounting", async function() {
         await accounting.registerApiary(owner.address);
         const apiary = await accounting.getApiaryInfo(owner.address);
         expect(apiary.owner).to.eq(owner.address);
+        expect(apiary.lastClaimTimestamp).to.not.eq(0);
+        expect(apiary.lastDeferredPayoutTimestamp).to.eq(apiary.lastClaimTimestamp);
     })
 
     it("should failed to register apiary with message 'Apiary is already registered'", async function() {
@@ -48,11 +50,10 @@ describe("ApiaryAccounting", async function() {
         await expect(accounting.connect(thirdPerson).setMoodRecoveryTime(0)).to.revertedWith("Only admin");
     })
 
-    it("should set max apiary mood for empty apiary", async function() {
+    it("should set -10000 apiary mood for empty apiary", async function() {
         const [, owner] = await ethers.getSigners();
         const mood = await accounting.getApiaryMood(owner.address);
-        const maxMood = await accounting.MAX_MOOD();
-        expect(mood).to.eq(maxMood);
+        expect(mood).to.eq(-10000);
     })
 
     it("should fail to set new beeDailyProfits with message 'Only admin'", async function() {
