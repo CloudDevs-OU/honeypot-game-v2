@@ -54,4 +54,28 @@ describe("ApiaryAccounting", async function() {
         const maxMood = await accounting.MAX_MOOD();
         expect(mood).to.eq(maxMood);
     })
+
+    it("should fail to set new beeDailyProfits with message 'Only admin'", async function() {
+        const [,, thirdPerson] = await ethers.getSigners();
+        await expect(accounting.connect(thirdPerson).setBeeDailyProfits([0,0,0,0,0,0,0]))
+            .to.revertedWith("Only admin");
+    })
+
+    it("should set new beeDailyProfits", async function() {
+        const newBeeDailyProfits = [
+            ethers.utils.parseEther("1"),
+            ethers.utils.parseEther("2"),
+            ethers.utils.parseEther("3"),
+            ethers.utils.parseEther("4"),
+            ethers.utils.parseEther("5"),
+            ethers.utils.parseEther("6"),
+            ethers.utils.parseEther("7")
+        ];
+        await accounting.setBeeDailyProfits(newBeeDailyProfits);
+        const beeDailyProfits = await accounting.getBeeDailyProfits();
+
+        for (let i = 0; i < 7; i++) {
+            expect(beeDailyProfits[i]).to.eq(newBeeDailyProfits[i]);
+        }
+    })
 })

@@ -18,6 +18,7 @@ contract ApiaryAccounting {
 
     // Configs
     uint public moodRecoveryTime;
+    uint[7] beeDailyProfits = [1.5 ether, 3.5 ether, 7.5 ether, 25 ether, 45 ether, 95 ether, 200 ether];
 
     // Modifiers
     modifier hasRegistered(address account) {
@@ -54,6 +55,23 @@ contract ApiaryAccounting {
      */
     function setMoodRecoveryTime(uint _moodRecoveryTime) public onlyAdmin {
         moodRecoveryTime = _moodRecoveryTime;
+    }
+
+    /**
+     * @dev Set bee daily profits
+     * @notice Can be accessed only by contract admin
+     *
+     * @param _beeDailyProfits New bee daily profits
+     */
+    function setBeeDailyProfits(uint[7] memory _beeDailyProfits) public onlyAdmin {
+        beeDailyProfits = _beeDailyProfits;
+    }
+
+    /**
+     * @dev Get bee daily profits
+     */
+    function getBeeDailyProfits() public view returns(uint[7] memory) {
+        return beeDailyProfits;
     }
 
     /**
