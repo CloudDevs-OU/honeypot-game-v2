@@ -19,7 +19,6 @@ contract HoneyBank is IHoneyBank, AccessControl {
     bytes32 public constant BANKER_ROLE = keccak256("BANKER_ROLE");
 
     // Events
-    event Deposit(address from, uint value);
     event BuyTokens(address userAddress, uint tokensAmount, uint stableAmount, uint rate, uint fee);
     event SellTokens(address userAddress, uint tokensAmount, uint stableAmount, uint rate, uint fee);
     event RateUpdate(uint oldRate, uint newRate);
@@ -28,17 +27,22 @@ contract HoneyBank is IHoneyBank, AccessControl {
     constructor(IERC20 _stable) {
         token = new HoneyToken();
         stable = _stable;
-        rate = 100;
-        swapFee = 2;
+        rate = 100; // 1 stable = 100 tokens
+        swapFee = 200; // 2 %
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setRoleAdmin(BANKER_ROLE, DEFAULT_ADMIN_ROLE);
     }
 
+    /**
+     * @dev Swap stable to tokens
+     *
+     * @param tokensAmount tokens amount that will be added to balance
+     */
     function buyTokens(uint tokensAmount) public {
         require(tokensAmount >= MIN_SWAP_TOKENS_AMOUNT, "Buy tokens amount too small");
 
         uint stableAmount = tokensAmount / rate;
-        uint stableFee = stableAmount / 100 * swapFee;
+        uint stableFee = stableAmount * swapFee / 10000 ;
         uint stableAmountWithFee = stableAmount + stableFee;
         uint stableAllowance = stable.allowance(msg.sender, address(this));
         require(stableAllowance >= stableAmountWithFee, "Allowance is not enough");
@@ -49,16 +53,19 @@ contract HoneyBank is IHoneyBank, AccessControl {
         emit BuyTokens(msg.sender, tokensAmount, stableAmount, rate, stableFee);
     }
 
+    /**
+     * @dev Swap tokens to stable
+     *
+     * @param tokensAmount tokens amount that will be subtracted from balance
+     */
     function sellTokens(uint tokensAmount) public {
         require(tokensAmount >= MIN_SWAP_TOKENS_AMOUNT, "Sell tokens amount is too small");
+        require(token.balanceOf(msg.sender) >= tokensAmount, "Not enough tokens on balance");
 
-        uint tokensFee = tokensAmount / 100 * swapFee;
-        uint tokensAmountWithFee = tokensAmount + tokensFee;
-        require(token.balanceOf(msg.sender) >= tokensAmountWithFee, "Not enough tokens on balance");
+        token.burnTokens(msg.sender, tokensAmount);
 
-        token.burnFrom(msg.sender, tokensAmountWithFee);
-
-        uint stableAmount = tokensAmount / rate;
+        uint tokensFee = tokensAmount * swapFee / 10000 ;
+        uint stableAmount = (tokensAmount - tokensFee) / rate;
         stable.transfer(msg.sender, stableAmount);
 
         emit SellTokens(msg.sender, tokensAmount, stableAmount, rate, tokensFee);
@@ -88,17 +95,7 @@ contract HoneyBank is IHoneyBank, AccessControl {
     }
 
     /**
-     * @dev Get tokens balance of account
-     * @notice Can be accessed only by contract admin
-     *
-     * @param account balance owner
-     */
-    function balanceOf(address account) public view returns(uint) {
-        return token.balanceOf(account);
-    }
-
-    /**
-     * @dev Update swap rate
+     * @dev Update swap rate (1 stable = tokens / rate)
      * @notice Can be accessed only by contract admin
      *
      * @param newRate new rate that must be used for swap calc
@@ -109,7 +106,7 @@ contract HoneyBank is IHoneyBank, AccessControl {
     }
 
     /**
-     * @dev Update swap fee
+     * @dev Update swap fee (10,000 = 100%)
      * @notice Can be accessed only by contract admin
      *
      * @param newSwapFee new swap fee that must be applied to all swaps
@@ -117,5 +114,15 @@ contract HoneyBank is IHoneyBank, AccessControl {
     function setSwapFee(uint newSwapFee) public onlyRole(DEFAULT_ADMIN_ROLE) {
         emit SwapFeeUpdate(swapFee, newSwapFee);
         swapFee = newSwapFee;
+    }
+
+    /**
+ * @dev Get tokens balance of account
+     * @notice Can be accessed only by contract admin
+     *
+     * @param account balance owner
+     */
+    function balanceOf(address account) public view returns(uint) {
+        return token.balanceOf(account);
     }
 }
