@@ -4,8 +4,9 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
+import "./IBeeItem.sol";
 
-contract BeeItem is ERC1155, AccessControl {
+contract BeeItem is IBeeItem, ERC1155, AccessControl {
     // Constants
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
@@ -28,7 +29,7 @@ contract BeeItem is ERC1155, AccessControl {
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC1155, AccessControl) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC1155, AccessControl) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 }
