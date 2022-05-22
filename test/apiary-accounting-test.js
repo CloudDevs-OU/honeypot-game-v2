@@ -30,4 +30,16 @@ describe("ApiaryAccounting", async function() {
         const [,, thirdPerson] = await ethers.getSigners();
         await expect(accounting.connect(thirdPerson).registerApiary(thirdPerson.address)).to.revertedWith("Only admin");
     })
+
+    it("should set default moodRecoveryTime to 7 days", async function() {
+        const moodRecoveryTime = await accounting.moodRecoveryTime();
+        expect(moodRecoveryTime).to.eq(7*24*60*60);
+    })
+
+    it("should set max apiary mood for empty apiary", async function() {
+        const [, owner] = await ethers.getSigners();
+        const mood = await accounting.getApiaryMood(owner.address);
+        const maxMood = await accounting.MAX_MOOD();
+        expect(mood).to.eq(maxMood);
+    })
 })

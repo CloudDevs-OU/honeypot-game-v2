@@ -6,11 +6,18 @@ contract ApiaryAccounting {
     // Structs
     struct ApiaryInfo {
         address owner;
+        uint lastClaimTimestamp;
     }
+
+    // Constants
+    uint constant public MAX_MOOD = 10000;
 
     // State
     address public admin;
     mapping(address => ApiaryInfo) info;
+
+    // Configs
+    uint public moodRecoveryTime;
 
     // Modifiers
     modifier hasRegistered(address account) {
@@ -25,6 +32,7 @@ contract ApiaryAccounting {
 
     constructor() {
         admin = msg.sender;
+        moodRecoveryTime = 7 days;
     }
 
     /**
@@ -45,5 +53,19 @@ contract ApiaryAccounting {
      */
     function getApiaryInfo(address owner) public view returns(ApiaryInfo memory) {
         return info[owner];
+    }
+
+    /**
+     * @dev Get apiary mood based on last claim timestamp
+     *
+     * @param owner Apiary owner
+     */
+    function getApiaryMood(address owner) public view returns(int) {
+        uint timeSpent = block.timestamp - info[owner].lastClaimTimestamp;
+        if (timeSpent >= moodRecoveryTime) {
+            return int(MAX_MOOD);
+        }
+
+        return int(2 * MAX_MOOD * 1000 / moodRecoveryTime * timeSpent / 1000) - int(MAX_MOOD);
     }
 }
