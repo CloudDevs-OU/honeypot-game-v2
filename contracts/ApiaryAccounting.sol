@@ -176,7 +176,7 @@ contract ApiaryAccounting {
         uint[7] memory items,
         uint setId
     ) public view returns(uint) {
-        uint notDeferredProfit = calcPureProfit(bees, items, setId, info[owner].lastDeferredPayoutTimestamp, block.timestamp);
+        uint notDeferredProfit = calcPureProfit(bees, items, setId, block.timestamp - info[owner].lastDeferredPayoutTimestamp);
         // Apply mood factor
         int mood = getApiaryMood(owner);
         if (mood > 0) {
@@ -193,23 +193,21 @@ contract ApiaryAccounting {
      * @param items Owner items
      * @param setId Set id. Can be 0 when there is no 7 items from the same set.
      * @param items Owner items
-     * @param from timestamp of start time
-     * @param to timestamp of end time
+     * @param period period between start time and end time
      * @return profit value
      */
     function calcPureProfit(
         uint[7] memory bees,
         uint[7] memory items,
         uint setId,
-        uint from,
-        uint to
-    ) private view returns(uint){
+        uint period
+    ) public view returns(uint){
         uint profit;
 
         // Calc bees profit (+ items bonus)
         for(uint i; i < bees.length; i++) {
             // profit = dailyProfit * beesAmount * itemBonusPercent * daysSpent
-            profit += beeDailyProfits[i] * bees[i] * (10000 + itemBonusPercents[items[i]]) * (to - from) / 1 days / 10000;
+            profit += beeDailyProfits[i] * bees[i] * (10000 + itemBonusPercents[items[i]]) * period / 1 days / 10000;
         }
 
         // Apply set bonus

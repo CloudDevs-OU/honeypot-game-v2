@@ -107,4 +107,32 @@ describe("ApiaryAccounting", async function() {
         await expect(accounting.connect(thirdPerson).setSetBonusPercents([1], [1]))
             .to.revertedWith("Only admin");
     })
+
+    it("should correct calculate pure daily profit", async function() {
+        const profit = await accounting.calcPureProfit(
+            [1,0,0,0,0,0,0], // bees
+            [0,0,0,0,0,0,0], // items
+            0,               // set
+            24*60*60         // 1 day
+        )
+
+        const beeDailyProfits = await accounting.getBeeDailyProfits();
+        expect(profit).to.eq(beeDailyProfits[0]);
+    })
+
+    it("should correct calculate pure combined profit", async function() {
+        const profit = await accounting.calcPureProfit(
+            [1,1,3,4,0,0,0], // bees
+            [0,0,0,0,0,0,0], // items
+            0,               // set
+            12*24*60*60      // 12 days
+        )
+
+        const beeDailyProfits = await accounting.getBeeDailyProfits();
+        const firstBeeProfit = beeDailyProfits[0].mul(12)
+        const secondBeeProfit = beeDailyProfits[1].mul(12)
+        const thirdBeeProfit = beeDailyProfits[2].mul(12).mul(3)
+        const forthBeeProfit = beeDailyProfits[3].mul(12).mul(4)
+        expect(profit).to.eq(firstBeeProfit.add(secondBeeProfit).add(thirdBeeProfit).add(forthBeeProfit));
+    })
 })
