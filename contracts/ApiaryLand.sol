@@ -6,6 +6,7 @@ contract ApiaryLand {
     // Structs
     struct Apiary {
         address owner;
+        uint[7] bees;
     }
 
     // State
@@ -13,6 +14,11 @@ contract ApiaryLand {
     mapping(address => Apiary) apiary;
 
     // Modifiers
+    modifier hasApiary(address account) {
+        require(apiary[account].owner == account, "Must be apiary owner");
+        _;
+    }
+
     modifier onlyAdmin {
         require(msg.sender == admin, "Only admin");
         _;
@@ -26,11 +32,26 @@ contract ApiaryLand {
      * @dev Create apiary for account
      * @notice Can be accessed only by contract admin
      *
-     * @param account Owner of new apiary
+     * @param account New apiary owner
      */
     function createApiary(address account) public onlyAdmin {
         require(apiary[account].owner == address(0), "Apiary is already created");
         apiary[account].owner = account;
+    }
+
+    /**
+     * @dev Add bees to owner's apiary
+     * @notice Can be accessed only by contract admin
+     *
+     * @param owner Apiary owner
+     * @param beeIds array of bee ids
+     * @param amounts array of bee amounts corresponding to beeIds
+     */
+    function addBees(address owner, uint[] memory beeIds, uint[] memory amounts) public onlyAdmin hasApiary(owner) {
+        require(beeIds.length == amounts.length, "'beeIds' length not equal to 'amounts' length");
+        for(uint i; i < beeIds.length; i++) {
+            apiary[owner].bees[beeIds[i] - 1] += amounts[i];
+        }
     }
 
     /**
