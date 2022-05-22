@@ -6,8 +6,12 @@ contract ApiaryLand {
     // Structs
     struct Apiary {
         address owner;
+        uint slots;
         uint[7] bees;
     }
+
+    // Constants
+    uint constant public DEFAULT_SLOTS = 10;
 
     // State
     address public admin;
@@ -37,6 +41,7 @@ contract ApiaryLand {
     function createApiary(address account) public onlyAdmin {
         require(apiary[account].owner == address(0), "Apiary is already created");
         apiary[account].owner = account;
+        apiary[account].slots = DEFAULT_SLOTS;
     }
 
     /**
@@ -52,6 +57,17 @@ contract ApiaryLand {
         for(uint i; i < beeIds.length; i++) {
             apiary[owner].bees[beeIds[i] - 1] += amounts[i];
         }
+    }
+
+    /**
+     * @dev Add slots to owner's apiary
+     * @notice Can be accessed only by contract admin
+     *
+     * @param owner Apiary owner
+     * @param amount slots amount that needs to be added
+     */
+    function addSlots(address owner, uint amount) public onlyAdmin hasApiary(owner) {
+        apiary[owner].slots += amount;
     }
 
     /**

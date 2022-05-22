@@ -60,4 +60,20 @@ describe("ApiaryLand", async function() {
         await expect(land.addBees(owner.address, [42], [1])).to.reverted;
     })
 
+    it("should set default slots amount to apiary", async () => {
+        const [,owner] = await ethers.getSigners();
+        const apiary = await land.getApiary(owner.address);
+        const defaultSlots = await land.DEFAULT_SLOTS();
+        expect(apiary.slots).to.eq(defaultSlots);
+    })
+
+    it("should fail to add slots with message 'Only admin'", async function() {
+        const [,owner] = await ethers.getSigners();
+        await expect(land.connect(owner).addSlots(owner.address, 10)).to.revertedWith("Only admin");
+    })
+
+    it("should fail to add slots to none existing apiary with message 'Must be apiary owner'", async function() {
+        const [,,nonRegisteredAccount] = await ethers.getSigners();
+        await expect(land.addSlots(nonRegisteredAccount.address, 10)).to.revertedWith("Must be apiary owner");
+    })
 })
