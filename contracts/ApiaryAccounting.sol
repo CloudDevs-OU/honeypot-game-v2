@@ -47,6 +47,16 @@ contract ApiaryAccounting {
     }
 
     /**
+     * @dev Set new mood recovery time
+     * @notice Can be accessed only by contract admin
+     *
+     * @param _moodRecoveryTime New mood recovery time
+     */
+    function setMoodRecoveryTime(uint _moodRecoveryTime) public onlyAdmin {
+        moodRecoveryTime = _moodRecoveryTime;
+    }
+
+    /**
      * @dev Get accounting apiary info
      *
      * @param owner Apiary owner
