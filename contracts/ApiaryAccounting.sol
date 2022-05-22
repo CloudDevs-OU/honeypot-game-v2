@@ -9,6 +9,7 @@ contract ApiaryAccounting {
         uint lastClaimTimestamp;
         uint lastDeferredPayoutTimestamp;
         uint deferredProfit;
+        uint totalClaimedProfit;
     }
 
     // State
@@ -94,6 +95,28 @@ contract ApiaryAccounting {
         for(uint i; i < setIds.length; i++) {
             setBonusPercents[setIds[i]] = bonusPercents[i];
         }
+    }
+
+    /**
+     * @dev Add profit to owner's totalClaimedProfit and reset deferred payouts
+     * @notice Can be accessed only by contract admin
+     *
+     * @param owner Apiary owner
+     * @return claimed profit
+     */
+    function claimProfit(
+        address owner,
+        uint[7] memory bees,
+        uint[7] memory items,
+        uint setId
+    ) public onlyAdmin hasRegistered(owner) returns(uint) {
+        uint profit = calcAvailableProfitForClaiming(owner, bees, items, setId);
+        info[owner].totalClaimedProfit += profit;
+        info[owner].lastClaimTimestamp = block.timestamp;
+        info[owner].lastDeferredPayoutTimestamp = block.timestamp;
+        info[owner].deferredProfit = 0;
+
+        return profit;
     }
 
     /**
