@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
-import "./IBeeItem.sol";
+import "./interface/IBeeItem.sol";
 
 contract BeeItem is IBeeItem, ERC1155, AccessControl {
     // Constants

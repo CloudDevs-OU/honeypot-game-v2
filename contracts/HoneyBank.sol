@@ -5,7 +5,7 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./HoneyToken.sol";
-import "./IHoneyBank.sol";
+import "./interface/IHoneyBank.sol";
 
 contract HoneyBank is IHoneyBank, AccessControl {
     // State variables
