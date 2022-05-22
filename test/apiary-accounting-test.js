@@ -92,4 +92,18 @@ describe("ApiaryAccounting", async function() {
         await expect(accounting.connect(thirdPerson).setItemBonusPercents([1], [1]))
             .to.revertedWith("Only admin");
     })
+
+    it("should successfully set set bonus percents", async function() {
+        await accounting.setSetBonusPercents([1,2,3], [100,200,300]);
+        const percents = await accounting.getSetBonusPercents([1,2,3]);
+        expect(percents[0]).to.eq(100);
+        expect(percents[1]).to.eq(200);
+        expect(percents[2]).to.eq(300);
+    })
+
+    it("should fail set set bonus percents with message 'Only admin'", async function() {
+        const [,, thirdPerson] = await ethers.getSigners();
+        await expect(accounting.connect(thirdPerson).setSetBonusPercents([1], [1]))
+            .to.revertedWith("Only admin");
+    })
 })

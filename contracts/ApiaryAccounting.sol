@@ -16,6 +16,7 @@ contract ApiaryAccounting {
     address public admin;
     mapping(address => ApiaryInfo) info;
     mapping(uint => uint) itemBonusPercents;
+    mapping(uint => uint) setBonusPercents;
 
     // Configs
     uint public moodRecoveryTime;
@@ -82,6 +83,19 @@ contract ApiaryAccounting {
     }
 
     /**
+     * @dev Set set bonus percents
+     * @notice Can be accessed only by contract admin
+     *
+     * @param setIds array of set ids
+     * @param bonusPercents array of bonus percents that corresponding to setIds
+     */
+    function setSetBonusPercents(uint[] memory setIds, uint[] memory bonusPercents) public onlyAdmin {
+        for(uint i; i < setIds.length; i++) {
+            setBonusPercents[setIds[i]] = bonusPercents[i];
+        }
+    }
+
+    /**
      * @dev Get bee daily profits
      */
     function getBeeDailyProfits() public view returns(uint[7] memory) {
@@ -120,6 +134,20 @@ contract ApiaryAccounting {
         uint[] memory result = new uint[](itemIds.length);
         for(uint i; i < itemIds.length; i++) {
             result[i] = itemBonusPercents[itemIds[i]];
+        }
+
+        return result;
+    }
+
+    /**
+     * @dev Get set bonus percents by set ids
+     *
+     * @param setIds array of set ids
+     */
+    function getSetBonusPercents(uint[] memory setIds) public view returns(uint[] memory) {
+        uint[] memory result = new uint[](setIds.length);
+        for(uint i; i < setIds.length; i++) {
+            result[i] = setBonusPercents[setIds[i]];
         }
 
         return result;
