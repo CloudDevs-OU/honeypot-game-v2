@@ -223,7 +223,7 @@ contract ApiaryAccounting {
         if (mood > 0) {
             return (notDeferredProfit + info[owner].deferredProfit) * (10000 + uint(mood)) / 10000;
         } else {
-            return (notDeferredProfit + info[owner].deferredProfit) * (10000 - uint(mood)) / 10000;
+            return (notDeferredProfit + info[owner].deferredProfit) * (10000 - uint(-mood)) / 10000;
         }
     }
 
