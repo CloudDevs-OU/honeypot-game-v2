@@ -94,6 +94,7 @@ contract ApiaryLand {
      * @dev Get apiary by owner
      *
      * @param owner Apiary owner
+     * @return owner's Apiary
      */
     function getApiary(address owner) public view returns(Apiary memory) {
         return apiary[owner];
@@ -104,6 +105,7 @@ contract ApiaryLand {
      * @dev Get owner's apiary used slots
      *
      * @param owner Apiary owner
+     * @return owner's Apiary used slots
      */
     function getUsedSlots(address owner) public view returns(uint) {
         uint result;
@@ -116,6 +118,8 @@ contract ApiaryLand {
 
     /**
      * @dev Get slots needed for each bee
+     *
+     * @return array of slot amounts (index = beeId - 1, value = needed slots)
      */
     function getBeeSlots() public view returns(uint[] memory) {
         return beeSlots;
