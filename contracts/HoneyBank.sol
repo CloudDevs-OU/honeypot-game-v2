@@ -27,7 +27,7 @@ contract HoneyBank is IHoneyBank, AccessControl {
     constructor(IERC20 _stable) {
         token = new HoneyToken();
         stable = _stable;
-        rate = 100; // 1 stable = 100 tokens
+        rate = 100; // 1 stable = 1 token / 10000 * rate => 1 token = 1 stable * 10000 / rate
         swapFee = 200; // 2 %
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setRoleAdmin(BANKER_ROLE, DEFAULT_ADMIN_ROLE);
@@ -41,8 +41,8 @@ contract HoneyBank is IHoneyBank, AccessControl {
     function buyTokens(uint tokensAmount) public {
         require(tokensAmount >= MIN_SWAP_TOKENS_AMOUNT, "Buy tokens amount too small");
 
-        uint stableAmount = tokensAmount / rate;
-        uint stableFee = stableAmount * swapFee / 10000 ;
+        uint stableAmount = tokensAmount * rate / 10000;
+        uint stableFee = stableAmount * swapFee / 10000;
         uint stableAmountWithFee = stableAmount + stableFee;
         uint stableAllowance = stable.allowance(msg.sender, address(this));
         require(stableAllowance >= stableAmountWithFee, "Allowance is not enough");
@@ -65,7 +65,7 @@ contract HoneyBank is IHoneyBank, AccessControl {
         token.burnTokens(msg.sender, tokensAmount);
 
         uint tokensFee = tokensAmount * swapFee / 10000 ;
-        uint stableAmount = (tokensAmount - tokensFee) / rate;
+        uint stableAmount = (tokensAmount - tokensFee) * rate / 10000;
         stable.transfer(msg.sender, stableAmount);
 
         emit SellTokens(msg.sender, tokensAmount, stableAmount, rate, tokensFee);

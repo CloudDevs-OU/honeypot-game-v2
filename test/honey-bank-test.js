@@ -97,7 +97,7 @@ describe("HoneyBank", async function() {
         await bank.connect(user).buyTokens(oneThousandTokens);
         expect(await token.balanceOf(user.address)).eq(oneThousandTokens);
 
-        const pureStableAmount = oneThousandTokens.div(await bank.rate());
+        const pureStableAmount = oneThousandTokens.mul(await bank.rate()).div(10000);
         const swapFee = await bank.swapFee();
         const expectedSpentStableAmount = pureStableAmount.add(pureStableAmount.mul(swapFee).div(10000));
         const actualStableSpentAmount = STABLE_INITIAL_BALANCE.sub(await stable.balanceOf(user.address));
@@ -117,7 +117,7 @@ describe("HoneyBank", async function() {
         const pureTokensAmount = oneThousandTokens.sub(oneThousandTokens.mul(swapFee).div(10000));
 
         const rate = await bank.rate();
-        const stableAmount = pureTokensAmount.div(rate);
+        const stableAmount = pureTokensAmount.mul(rate).div(10000);
 
         expect(await stable.balanceOf(user.address)).eq(stableBalanceBefore.add(stableAmount));
     })
