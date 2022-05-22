@@ -8,12 +8,22 @@ describe("HoneyToken", async function() {
         token = await HoneyToken.deploy();
     })
 
+    it("total supply should be equals to 0", async function() {
+        const totalSupply = await token.totalSupply();
+        expect(totalSupply).to.eq(0);
+    })
+
     it("should successfully mint tokens", async function() {
         const [,user] = await ethers.getSigners();
         const oneThousandTokens = ethers.utils.parseEther("1000");
         await token.mintTokens(user.address, oneThousandTokens);
         const balance = await token.balanceOf(user.address);
         expect(balance).to.eq(oneThousandTokens);
+    })
+
+    it("total supply should be increased to 1000", async function() {
+        const totalSupply = await token.totalSupply();
+        expect(totalSupply).to.eq(ethers.utils.parseEther("1000"));
     })
 
     it("should fail to mint tokens with message 'Ownable: caller is not the owner'", async function() {
@@ -28,6 +38,11 @@ describe("HoneyToken", async function() {
         await token.burnTokens(user.address, oneThousandTokens);
         const balance = await token.balanceOf(user.address);
         expect(balance).to.eq(0);
+    })
+
+    it("total supply should be decreased to 0", async function() {
+        const totalSupply = await token.totalSupply();
+        expect(totalSupply).to.eq(0);
     })
 
     it("should fail to burn tokens with message 'Ownable: caller is not the owner'", async function() {
