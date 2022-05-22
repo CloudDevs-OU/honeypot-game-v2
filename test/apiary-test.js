@@ -76,4 +76,29 @@ describe("ApiaryLand", async function() {
         const [,,nonRegisteredAccount] = await ethers.getSigners();
         await expect(land.addSlots(nonRegisteredAccount.address, 10)).to.revertedWith("Must be apiary owner");
     })
+
+    it("should increase slots amount", async function() {
+        const [,owner] = await ethers.getSigners();
+        const apiaryBefore = await land.getApiary(owner.address);
+        await land.addSlots(owner.address, 100);
+        const apiaryAfter = await land.getApiary(owner.address);
+        expect(apiaryAfter.slots).to.eq(apiaryBefore.slots.add(100));
+    })
+
+    it("should increase used slots amount", async function() {
+        const [,owner] = await ethers.getSigners();
+        const slots = await land.getBeeSlots();
+
+        const usedSlotsBefore = await land.getUsedSlots(owner.address);
+        await land.addBees(owner.address, [1], [2]);
+        const usedSlotsAfter = await land.getUsedSlots(owner.address);
+
+        expect(usedSlotsAfter).to.eq(usedSlotsBefore.add(slots[0] * 2));
+    })
+
+    it("should fail to add bees with message 'Not enough slots'", async function() {
+        const [,owner] = await ethers.getSigners();
+        await expect(land.addBees(owner.address, [6], [100])).to.revertedWith('Not enough slots');
+    })
+
 })

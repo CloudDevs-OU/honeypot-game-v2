@@ -11,7 +11,9 @@ contract ApiaryLand {
     }
 
     // Constants
+    uint constant public TOTAL_BEES = 7;
     uint constant public DEFAULT_SLOTS = 10;
+    uint[] public beeSlots = [1, 2, 4, 8, 16, 32, 64];
 
     // State
     address public admin;
@@ -57,6 +59,8 @@ contract ApiaryLand {
         for(uint i; i < beeIds.length; i++) {
             apiary[owner].bees[beeIds[i] - 1] += amounts[i];
         }
+
+        require(apiary[owner].slots >= getUsedSlots(owner), "Not enough slots");
     }
 
     /**
@@ -77,5 +81,27 @@ contract ApiaryLand {
      */
     function getApiary(address owner) public view returns(Apiary memory) {
         return apiary[owner];
+    }
+
+
+    /**
+     * @dev Get owner's apiary used slots
+     *
+     * @param owner Apiary owner
+     */
+    function getUsedSlots(address owner) public view returns(uint) {
+        uint result;
+        for(uint i; i < TOTAL_BEES; i++) {
+            result += apiary[owner].bees[i] * beeSlots[i];
+        }
+
+        return result;
+    }
+
+    /**
+     * @dev Get slots needed for each bee
+     */
+    function getBeeSlots() public view returns(uint[] memory) {
+        return beeSlots;
     }
 }
