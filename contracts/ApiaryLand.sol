@@ -22,11 +22,22 @@ contract ApiaryLand {
         admin = msg.sender;
     }
 
+    /**
+     * @dev Create apiary for account
+     * @notice Can be accessed only by contract admin
+     *
+     * @param account Owner of new apiary
+     */
     function createApiary(address account) public onlyAdmin {
         require(apiary[account].owner == address(0), "Apiary is already created");
         apiary[account].owner = account;
     }
 
+    /**
+     * @dev Get apiary by owner
+     *
+     * @param owner Apiary owner
+     */
     function getApiary(address owner) public view returns(Apiary memory) {
         return apiary[owner];
     }
