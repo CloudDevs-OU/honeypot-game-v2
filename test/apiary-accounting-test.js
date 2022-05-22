@@ -78,4 +78,18 @@ describe("ApiaryAccounting", async function() {
             expect(beeDailyProfits[i]).to.eq(newBeeDailyProfits[i]);
         }
     })
+
+    it("should successfully set item bonus percents", async function() {
+        await accounting.setItemBonusPercents([1,2,3], [10,20,30]);
+        const percents = await accounting.getItemBonusPercents([1,2,3]);
+        expect(percents[0]).to.eq(10);
+        expect(percents[1]).to.eq(20);
+        expect(percents[2]).to.eq(30);
+    })
+
+    it("should fail set item bonus percents with message 'Only admin'", async function() {
+        const [,, thirdPerson] = await ethers.getSigners();
+        await expect(accounting.connect(thirdPerson).setItemBonusPercents([1], [1]))
+            .to.revertedWith("Only admin");
+    })
 })
