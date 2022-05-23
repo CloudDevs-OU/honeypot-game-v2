@@ -3,8 +3,9 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
+import "./interface/IUserRegistry.sol";
 
-contract UserRegistry is AccessControl {
+contract UserRegistry is IUserRegistry, AccessControl {
     // Structs
     struct User {
         address account;

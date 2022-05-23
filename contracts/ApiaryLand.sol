@@ -3,8 +3,9 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
+import "./interface/IApiaryLand.sol";
 
-contract ApiaryLand is AccessControl {
+contract ApiaryLand is IApiaryLand, AccessControl {
     // Structs
     struct Apiary {
         address owner;
