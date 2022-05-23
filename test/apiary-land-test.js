@@ -6,12 +6,20 @@ describe("ApiaryLand", async function() {
     before(async function() {
         const ApiaryLand = await ethers.getContractFactory("ApiaryLand");
         land = await ApiaryLand.deploy();
+
+        const [admin] = await ethers.getSigners();
+
+        const operatorRole = await land.OPERATOR_ROLE();
+        await land.grantRole(operatorRole, admin.address);
+
+        const minterRole = await land.MINTER_ROLE();
+        await land.grantRole(minterRole, admin.address);
     })
 
     it("should set admin", async function() {
         const [admin] = await ethers.getSigners();
-        const actualAdmin = await land.admin();
-        expect(actualAdmin).eq(admin.address);
+        const adminRole = await land.DEFAULT_ADMIN_ROLE()
+        expect(await land.hasRole(adminRole, admin.address)).true;
     })
 
     it("should successfully create apiary", async function() {
@@ -26,9 +34,9 @@ describe("ApiaryLand", async function() {
         expect(apiaryAfter.owner).eq(owner.address);
     })
 
-    it("should fail to create apiary with message 'Only admin'", async function() {
+    it("should fail to create apiary without operator role", async function() {
         const [,,thirdPerson] = await ethers.getSigners();
-        await expect(land.connect(thirdPerson).createApiary(thirdPerson.address)).revertedWith("Only admin");
+        await expect(land.connect(thirdPerson).createApiary(thirdPerson.address)).to.be.reverted;
     })
 
     it("should fail to create apiary with message 'Apiary is already created'", async function() {
@@ -49,9 +57,9 @@ describe("ApiaryLand", async function() {
         await expect(land.addBees(nonRegisteredAccount.address, [1], [2])).revertedWith("Must be apiary owner");
     })
 
-    it("should fail to add bees with message 'Only admin'", async function() {
+    it("should fail to add bees with message 'Only operator or minter'", async function() {
         const [,owner] = await ethers.getSigners();
-        await expect(land.connect(owner).addBees(owner.address, [1], [1])).revertedWith("Only admin");
+        await expect(land.connect(owner).addBees(owner.address, [1], [1])).revertedWith("Only operator or minter");
     })
 
     it("should fail to add bees with none existing id", async function() {
@@ -66,9 +74,9 @@ describe("ApiaryLand", async function() {
         expect(apiary.slots).eq(defaultSlots);
     })
 
-    it("should fail to add slots with message 'Only admin'", async function() {
+    it("should fail to add slots with message 'Only operator or minter'", async function() {
         const [,owner] = await ethers.getSigners();
-        await expect(land.connect(owner).addSlots(owner.address, 10)).revertedWith("Only admin");
+        await expect(land.connect(owner).addSlots(owner.address, 10)).revertedWith("Only operator or minter");
     })
 
     it("should fail to add slots to none existing apiary with message 'Must be apiary owner'", async function() {
@@ -100,9 +108,9 @@ describe("ApiaryLand", async function() {
         await expect(land.addBees(owner.address, [6], [100])).revertedWith('Not enough slots');
     })
 
-    it("should fail to set items with message 'Only admin'", async function() {
+    it("should fail to set items without operator role", async function() {
         const [,owner] = await ethers.getSigners();
-        await expect(land.connect(owner).setApiaryItems(owner.address, [1], [1])).revertedWith('Only admin');
+        await expect(land.connect(owner).setApiaryItems(owner.address, [1], [1])).reverted;
     })
 
     it("should fail to set items with message 'Must be apiary owner'", async function() {
@@ -192,9 +200,9 @@ describe("ApiaryLand", async function() {
         expect(moodRecoveryTime).eq(twoWeeks);
     })
 
-    it("should fail to update moodRecoveryTime with message 'Only admin'", async function() {
+    it("should fail to update moodRecoveryTime without admin role", async function() {
         const [,, thirdPerson] = await ethers.getSigners();
-        await expect(land.connect(thirdPerson).setMoodRecoveryTime(0)).revertedWith("Only admin");
+        await expect(land.connect(thirdPerson).setMoodRecoveryTime(0)).reverted;
     })
 
     it("should set -10000 apiary mood for empty apiary", async function() {
@@ -203,10 +211,9 @@ describe("ApiaryLand", async function() {
         expect(mood).eq(-10000);
     })
 
-    it("should fail to set new beeDailyProfits with message 'Only admin'", async function() {
+    it("should fail to set new beeDailyProfits without admin role", async function() {
         const [,, thirdPerson] = await ethers.getSigners();
-        await expect(land.connect(thirdPerson).setBeeDailyProfits([0,0,0,0,0,0,0]))
-            .revertedWith("Only admin");
+        await expect(land.connect(thirdPerson).setBeeDailyProfits([0,0,0,0,0,0,0])).reverted;
     })
 
     it("should set new beeDailyProfits", async function() {
@@ -227,10 +234,9 @@ describe("ApiaryLand", async function() {
         }
     })
 
-    it("should fail to save set with message 'Only admin'", async function() {
+    it("should fail to save set without admin", async function() {
         const [,, thirdPerson] = await ethers.getSigners();
-        await expect(land.connect(thirdPerson).saveSet(1, 100, [1,2,3,4,5,6,7], [1,2,3,4,5,6,7]))
-            .revertedWith("Only admin");
+        await expect(land.connect(thirdPerson).saveSet(1, 100, [1,2,3,4,5,6,7], [1,2,3,4,5,6,7])).reverted;
     })
 
     it("should successfully save set", async function() {

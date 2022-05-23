@@ -2,7 +2,9 @@
 
 pragma solidity ^0.8.0;
 
-contract ApiaryLand {
+import "@openzeppelin/contracts/access/AccessControl.sol";
+
+contract ApiaryLand is AccessControl {
     // Structs
     struct Apiary {
         address owner;
@@ -16,21 +18,20 @@ contract ApiaryLand {
     }
 
     // Constants
+    bytes32 public constant OPERATOR_ROLE = keccak256("OPERATOR_ROLE");
+    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     uint constant public TOTAL_BEES = 7;
     uint constant public DEFAULT_SLOTS = 10;
     uint[] public beeSlots = [1, 2, 4, 8, 16, 32, 64];
 
     // State
-    address public admin;
-    mapping(address => Apiary) apiary;
-
-    // Configurable by admin
     uint public moodRecoveryTime;
     uint[7] beeDailyProfits = [1.5 ether, 3.5 ether, 7.5 ether, 25 ether, 45 ether, 95 ether, 200 ether];
     mapping(uint => uint) itemBonusPercents;
     mapping(uint => uint) setBonusPercents;
     mapping(uint => uint) itemSet;
     mapping(uint => uint[7]) setItems;
+    mapping(address => Apiary) apiary;
 
     // Modifiers
     modifier hasApiary(address account) {
@@ -38,14 +39,17 @@ contract ApiaryLand {
         _;
     }
 
-    modifier onlyAdmin {
-        require(msg.sender == admin, "Only admin");
+    modifier operatorOrMinter {
+        require(hasRole(OPERATOR_ROLE, msg.sender) || hasRole(MINTER_ROLE, msg.sender), "Only operator or minter");
         _;
     }
 
     constructor() {
-        admin = msg.sender;
         moodRecoveryTime = 7 days;
+
+        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _setRoleAdmin(OPERATOR_ROLE, DEFAULT_ADMIN_ROLE);
+        _setRoleAdmin(MINTER_ROLE, DEFAULT_ADMIN_ROLE);
     }
 
     /**
@@ -54,7 +58,7 @@ contract ApiaryLand {
      *
      * @param account New apiary owner
      */
-    function createApiary(address account) public onlyAdmin {
+    function createApiary(address account) public onlyRole(OPERATOR_ROLE) {
         require(apiary[account].owner == address(0), "Apiary is already created");
         apiary[account].owner = account;
         apiary[account].slots = DEFAULT_SLOTS;
@@ -70,7 +74,7 @@ contract ApiaryLand {
      * @param beeIds array of bee ids
      * @param amounts array of bee amounts corresponding to beeIds
      */
-    function addBees(address owner, uint[] memory beeIds, uint[] memory amounts) public onlyAdmin hasApiary(owner) {
+    function addBees(address owner, uint[] memory beeIds, uint[] memory amounts) public operatorOrMinter hasApiary(owner) {
         require(beeIds.length == amounts.length, "'beeIds' length not equal to 'amounts' length");
         beforeApiaryStateChanged(owner);
         for(uint i; i < beeIds.length; i++) {
@@ -87,7 +91,7 @@ contract ApiaryLand {
      * @param owner Apiary owner
      * @param amount slots amount that needs to be added
      */
-    function addSlots(address owner, uint amount) public onlyAdmin hasApiary(owner) {
+    function addSlots(address owner, uint amount) public operatorOrMinter hasApiary(owner) {
         apiary[owner].slots += amount;
     }
 
@@ -100,7 +104,7 @@ contract ApiaryLand {
      * @param itemIds array of item ids
      * @return item ids that no more in use (corresponding to beeIds)
      */
-    function setApiaryItems(address owner, uint[] memory beeIds, uint[] memory itemIds) public onlyAdmin hasApiary(owner) returns(uint[] memory) {
+    function setApiaryItems(address owner, uint[] memory beeIds, uint[] memory itemIds) public onlyRole(OPERATOR_ROLE) hasApiary(owner) returns(uint[] memory) {
         require(beeIds.length == itemIds.length, "'beeIds' length not equal to 'itemIds' length");
         beforeApiaryStateChanged(owner);
         uint[] memory unusedItemIds = new uint[](beeIds.length);
@@ -120,7 +124,7 @@ contract ApiaryLand {
      *
      * @param _moodRecoveryTime New mood recovery time
      */
-    function setMoodRecoveryTime(uint _moodRecoveryTime) public onlyAdmin {
+    function setMoodRecoveryTime(uint _moodRecoveryTime) public onlyRole(DEFAULT_ADMIN_ROLE) {
         moodRecoveryTime = _moodRecoveryTime;
     }
 
@@ -130,7 +134,7 @@ contract ApiaryLand {
      *
      * @param _beeDailyProfits New bee daily profits
      */
-    function setBeeDailyProfits(uint[7] memory _beeDailyProfits) public onlyAdmin {
+    function setBeeDailyProfits(uint[7] memory _beeDailyProfits) public onlyRole(DEFAULT_ADMIN_ROLE) {
         beeDailyProfits = _beeDailyProfits;
     }
 
@@ -145,7 +149,12 @@ contract ApiaryLand {
      * @param itemIds Item identifiers (10000 = 100%)
      * @param itemBonusPercentage Item bonus percents corresponding to itemIds (10000 = 100%)
      */
-    function saveSet(uint setId, uint setBonusPercentage, uint[7] memory itemIds, uint[7] memory itemBonusPercentage) public onlyAdmin {
+    function saveSet(
+        uint setId,
+        uint setBonusPercentage,
+        uint[7] memory itemIds,
+        uint[7] memory itemBonusPercentage
+    ) public onlyRole(DEFAULT_ADMIN_ROLE) {
         setItems[setId] = itemIds;
         setBonusPercents[setId] = setBonusPercentage;
         for(uint i; i < itemIds.length; i++) {
@@ -175,7 +184,7 @@ contract ApiaryLand {
      * @param owner Apiary owner
      * @return claimed profit
      */
-    function claimProfit(address owner) public onlyAdmin hasApiary(owner) returns(uint) {
+    function claimProfit(address owner) public onlyRole(OPERATOR_ROLE) hasApiary(owner) returns(uint) {
         uint profit = calcAvailableProfitForClaiming(owner, apiary[owner].bees, apiary[owner].items);
         apiary[owner].totalClaimedProfit += profit;
         apiary[owner].lastClaimTimestamp = block.timestamp;
@@ -193,7 +202,7 @@ contract ApiaryLand {
      *
      * @param owner Apiary owner
      */
-    function beforeApiaryStateChanged(address owner) private onlyAdmin hasApiary(owner) {
+    function beforeApiaryStateChanged(address owner) private {
         apiary[owner].deferredProfit += calcPureProfit(apiary[owner].bees, apiary[owner].items, block.timestamp - apiary[owner].lastDeferredPayoutTimestamp);
         apiary[owner].lastDeferredPayoutTimestamp = block.timestamp;
     }
