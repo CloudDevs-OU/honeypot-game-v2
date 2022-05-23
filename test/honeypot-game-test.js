@@ -1,6 +1,7 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 const STABLE_INITIAL_BALANCE = ethers.utils.parseEther("10000");
+const ONE_TOKEN = ethers.utils.parseEther("1");
 
 let registry;
 let bank;
@@ -119,5 +120,25 @@ describe("HoneypotGame", async function() {
         const apiary = await land.getApiary(user.address)
         const defaultSlots = await land.DEFAULT_SLOTS();
         expect(apiary.slots).eq(defaultSlots.add(50));
+    })
+
+    it("should successfully add items for sale", async function() {
+        const itemsBefore = await game.getSalableItems();
+        expect(itemsBefore.length).eq(2);
+        expect(itemsBefore[0].length).eq(0);
+        expect(itemsBefore[1].length).eq(0);
+
+        const itemPrice = ONE_TOKEN.mul(100);
+        await game.addItemsForSale([21], [itemPrice])
+
+        const itemsAfter = await game.getSalableItems();
+        expect(itemsAfter.length).eq(2);
+        expect(itemsAfter[0].length).eq(1);
+        expect(itemsAfter[1].length).eq(1);
+
+        expect(itemsAfter[0][0]).eq(21);
+        expect(itemsAfter[1][0]).eq(itemPrice);
+
+
     })
 })

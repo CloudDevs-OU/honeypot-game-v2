@@ -16,7 +16,9 @@ contract HoneypotGame is Ownable {
 
     uint public registrationPrice;
     uint public slotPrice;
-    uint[] public beePrices;
+    uint[] beePrices;
+    mapping(uint => uint) itemPrices;
+    uint[] salableItems;
 
     constructor(IApiaryLand _land, IBeeItem _item, IHoneyBank _bank, IUserRegistry _registry) {
         land = _land;
@@ -77,7 +79,30 @@ contract HoneypotGame is Ownable {
     }
 
     /**
+     * @dev Add items for sale
+     *
+     * @notice Can be accessed only by contract admin
+     *
+     * @param itemIds array of item ids to publish for sale
+     * @param prices array of itemIds prices
+     */
+    function addItemsForSale(uint[] memory itemIds, uint[] memory prices) public onlyOwner {
+        require(itemIds.length == prices.length, "itemIds.length must be equal to prices.length");
+        require(itemIds.length > 0, "itemIds.length must be > 0");
+        for(uint i; i < itemIds.length; i++) {
+            require(itemPrices[itemIds[i]] == 0, "Item is already presented");
+            require(itemIds[i] > 0, "itemIds[i] must be > 0");
+            require(prices[i] > 0, "prices[i] must be > 0");
+
+            salableItems.push(itemIds[i]);
+            itemPrices[itemIds[i]] = prices[i];
+        }
+    }
+
+    /**
      * @dev Update registration price value
+     *
+     * @notice Can be accessed only by contract admin
      *
      * @param _registrationPrice new registration price
      */
@@ -88,6 +113,8 @@ contract HoneypotGame is Ownable {
     /**
      * @dev Update slot price
      *
+     * @notice Can be accessed only by contract admin
+     *
      * @param _slotPrice new slot price
      */
     function setSlotPrice(uint _slotPrice) public onlyOwner {
@@ -96,6 +123,8 @@ contract HoneypotGame is Ownable {
 
     /**
      * @dev Update bee prices
+     *
+     * @notice Can be accessed only by contract admin
      *
      * @param _beePrices new bee prices
      */
@@ -108,5 +137,16 @@ contract HoneypotGame is Ownable {
      */
     function getBeePrices() public view returns(uint[] memory) {
         return beePrices;
+    }
+
+    /**
+     * @dev Get salable items with prices
+     */
+    function getSalableItems() public view returns(uint[] memory, uint[] memory) {
+        uint[] memory prices = new uint[](salableItems.length);
+        for(uint i; i < salableItems.length; i++) {
+            prices[i] = itemPrices[salableItems[i]];
+        }
+        return (salableItems, prices);
     }
 }

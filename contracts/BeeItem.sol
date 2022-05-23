@@ -27,6 +27,17 @@ contract BeeItem is IBeeItem, ERC1155, AccessControl {
     }
 
     /**
+     * @dev Mint batch bee item
+     *
+     * @param to token receiver
+     * @param ids  array of token identifiers
+     * @param amounts array of tokens amount that will be added to balance
+     */
+    function mintBatch(address to, uint[] memory ids, uint[] memory amounts) public onlyRole(MINTER_ROLE) {
+        _mintBatch(to, ids, amounts, "");
+    }
+
+    /**
      * @dev See {IERC165-supportsInterface}.
      */
     function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC1155, AccessControl) returns (bool) {
