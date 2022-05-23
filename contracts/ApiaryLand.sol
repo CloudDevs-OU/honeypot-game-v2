@@ -77,6 +77,7 @@ contract ApiaryLand is IApiaryLand, AccessControl {
      */
     function addBees(address owner, uint[] memory beeIds, uint[] memory amounts) public operatorOrMinter hasApiary(owner) {
         require(beeIds.length == amounts.length, "'beeIds' length not equal to 'amounts' length");
+        require(beeIds.length > 0, "'beeIds' length must be > 0");
         beforeApiaryStateChanged(owner);
         for(uint i; i < beeIds.length; i++) {
             apiary[owner].bees[beeIds[i] - 1] += amounts[i];

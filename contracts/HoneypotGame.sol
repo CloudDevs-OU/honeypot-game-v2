@@ -51,14 +51,12 @@ contract HoneypotGame is Ownable {
      * @param amounts array that correspond to bee amounts from beeIds
      */
     function buyBees(uint[] memory beeIds, uint[] memory amounts) public {
-        require(beeIds.length == amounts.length, "beeIds.length must be equal to amounts.length");
-        require(beeIds.length > 0, "beeIds can not be empty");
-
         uint totalCost;
         for(uint i; i < beeIds.length; i++) {
             totalCost += beePrices[beeIds[i] - 1] * amounts[i];
         }
 
+        require(totalCost > 0, "totalCost must be >0");
         bank.subtract(msg.sender, totalCost);
         land.addBees(msg.sender, beeIds, amounts);
     }
