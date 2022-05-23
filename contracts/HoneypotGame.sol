@@ -15,6 +15,7 @@ contract HoneypotGame is Ownable {
     IUserRegistry public registry;
 
     uint public registrationPrice;
+    uint public slotPrice;
     uint[] public beePrices;
 
     constructor(IApiaryLand _land, IBeeItem _item, IHoneyBank _bank, IUserRegistry _registry) {
@@ -24,6 +25,7 @@ contract HoneypotGame is Ownable {
         registry = _registry;
 
         registrationPrice = 100 ether;
+        slotPrice = 10 ether;
         beePrices = [250 ether, 500 ether, 1000 ether, 3000 ether, 5000 ether, 10000 ether, 20000 ether];
     }
 
@@ -60,12 +62,36 @@ contract HoneypotGame is Ownable {
     }
 
     /**
+     * @dev Buy slot packs
+     *
+     * @notice msg.sender must be registered
+     *
+     * @param packs 1 pack = 10 slots
+     */
+    function buySlotPacks(uint packs) public {
+        require(packs > 0, "packs must be > 0");
+
+        uint totalCost = packs * 10 * slotPrice;
+        bank.subtract(msg.sender, totalCost);
+        land.addSlots(msg.sender, packs * 10);
+    }
+
+    /**
      * @dev Update registration price value
      *
      * @param _registrationPrice new registration price
      */
     function setRegistrationPrice(uint _registrationPrice) public onlyOwner {
         registrationPrice = _registrationPrice;
+    }
+
+    /**
+     * @dev Update slot price
+     *
+     * @param _slotPrice new slot price
+     */
+    function setSlotPrice(uint _slotPrice) public onlyOwner {
+        slotPrice = _slotPrice;
     }
 
     /**

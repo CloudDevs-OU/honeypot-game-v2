@@ -92,7 +92,7 @@ describe("HoneypotGame", async function() {
         const tokenBalanceAfter = await token.balanceOf(user.address);
         expect(tokenBalanceBefore.sub(tokenBalanceAfter)).eq(totalCost);
 
-        // Check apiary
+        // Check apiary bees
         const apiary = await land.getApiary(user.address)
         expect(apiary.bees[0]).eq(5);
         expect(apiary.bees[1]).eq(1);
@@ -101,5 +101,23 @@ describe("HoneypotGame", async function() {
         expect(apiary.bees[4]).eq(0);
         expect(apiary.bees[5]).eq(0);
         expect(apiary.bees[6]).eq(0);
+    })
+
+    it("should successfully buy slots", async function() {
+        const [,user] = await ethers.getSigners();
+
+        const tokenBalanceBefore = await token.balanceOf(user.address);
+        await game.connect(user).buySlotPacks(5);
+
+        // Check tokens balance diff
+        const slotPrice = await game.slotPrice();
+        const totalCost = slotPrice.mul(50);
+        const tokenBalanceAfter = await token.balanceOf(user.address);
+        expect(tokenBalanceBefore.sub(tokenBalanceAfter)).eq(totalCost);
+
+        // Check apiary slots
+        const apiary = await land.getApiary(user.address)
+        const defaultSlots = await land.DEFAULT_SLOTS();
+        expect(apiary.slots).eq(defaultSlots.add(50));
     })
 })
