@@ -15,12 +15,16 @@ contract HoneypotGame is Ownable {
     IUserRegistry public registry;
 
     uint public registrationPrice;
+    uint[] public beePrices;
 
     constructor(IApiaryLand _land, IBeeItem _item, IHoneyBank _bank, IUserRegistry _registry) {
         land = _land;
         item = _item;
         bank = _bank;
         registry = _registry;
+
+        registrationPrice = 100 ether;
+        beePrices = [250 ether, 500 ether, 1000 ether, 3000 ether, 5000 ether, 10000 ether, 20000 ether];
     }
 
     /**
@@ -35,11 +39,48 @@ contract HoneypotGame is Ownable {
     }
 
     /**
+     * @dev Buy bees
+     *
+     * @notice msg.sender must be registered
+     *
+     * @param beeIds array of bee ids to buy
+     * @param amounts array that correspond to bee amounts from beeIds
+     */
+    function buyBees(uint[] memory beeIds, uint[] memory amounts) public {
+        require(beeIds.length == amounts.length, "beeIds.length must be equal to amounts.length");
+        require(beeIds.length > 0, "beeIds can not be empty");
+
+        uint totalCost;
+        for(uint i; i < beeIds.length; i++) {
+            totalCost += beePrices[beeIds[i] - 1] * amounts[i];
+        }
+
+        bank.subtract(msg.sender, totalCost);
+        land.addBees(msg.sender, beeIds, amounts);
+    }
+
+    /**
      * @dev Update registration price value
      *
      * @param _registrationPrice new registration price
      */
     function setRegistrationPrice(uint _registrationPrice) public onlyOwner {
         registrationPrice = _registrationPrice;
+    }
+
+    /**
+     * @dev Update bee prices
+     *
+     * @param _beePrices new bee prices
+     */
+    function setBeePrices(uint[] memory _beePrices) public onlyOwner {
+        beePrices = _beePrices;
+    }
+
+    /**
+     * @dev Get bee prices
+     */
+    function getBeePrices() public view returns(uint[] memory) {
+        return beePrices;
     }
 }

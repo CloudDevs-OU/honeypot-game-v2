@@ -28,8 +28,10 @@ describe("HoneypotGame", async function() {
         token = await ERC20.attach(await bank.token());
 
         const infinityTokens = ethers.utils.parseEther("99999999999")
+        const tenThousandTokens = ethers.utils.parseEther("10000")
         for (let i = 0; i < signers.length; i++) {
-            await stable.connect(signers[i]).approve(bank.address, infinityTokens)
+            await stable.connect(signers[i]).approve(bank.address, infinityTokens);
+            await bank.connect(signers[i]).buyTokens(tenThousandTokens);
         }
 
         // BeeItem
@@ -76,5 +78,28 @@ describe("HoneypotGame", async function() {
         // Check user's apiary
         const apiary = await land.getApiary(user.address)
         expect(apiary.owner).eq(user.address);
+    })
+
+    it("should successfully buy bees", async function() {
+        const [,user] = await ethers.getSigners();
+
+        const tokenBalanceBefore = await token.balanceOf(user.address);
+        await game.connect(user).buyBees([1, 2], [5, 1]);
+
+        // Check tokens balance diff
+        const beePrices = await game.getBeePrices();
+        const totalCost = beePrices[0].mul(5).add(beePrices[1]);
+        const tokenBalanceAfter = await token.balanceOf(user.address);
+        expect(tokenBalanceBefore.sub(tokenBalanceAfter)).eq(totalCost);
+
+        // Check apiary
+        const apiary = await land.getApiary(user.address)
+        expect(apiary.bees[0]).eq(5);
+        expect(apiary.bees[1]).eq(1);
+        expect(apiary.bees[2]).eq(0);
+        expect(apiary.bees[3]).eq(0);
+        expect(apiary.bees[4]).eq(0);
+        expect(apiary.bees[5]).eq(0);
+        expect(apiary.bees[6]).eq(0);
     })
 })
