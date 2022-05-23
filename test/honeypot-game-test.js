@@ -60,6 +60,10 @@ describe("HoneypotGame", async function() {
         // Registry: REGISTER_ROLE
         const registerRole = await registry.REGISTER_ROLE();
         await registry.grantRole(registerRole, game.address);
+
+        // Bee Item: MINTER_ROLE
+        const minterRole = await item.MINTER_ROLE();
+        await item.grantRole(minterRole, game.address);
     })
 
     it("should successfully register user", async function() {
@@ -138,7 +142,17 @@ describe("HoneypotGame", async function() {
 
         expect(itemsAfter[0][0]).eq(21);
         expect(itemsAfter[1][0]).eq(itemPrice);
+    })
 
+    it("should successfully buy items", async function() {
+        const [,user] = await ethers.getSigners();
 
+        expect(await item.balanceOf(user.address, 21)).eq(0);
+        const tokenBalanceBefore = await token.balanceOf(user.address);
+        await game.connect(user).buyItems([21], [1]);
+
+        expect(await item.balanceOf(user.address, 21)).eq(1);
+        const tokenBalanceAfter = await token.balanceOf(user.address);
+        expect(tokenBalanceBefore.sub(tokenBalanceAfter)).eq(ONE_TOKEN.mul(100));
     })
 })

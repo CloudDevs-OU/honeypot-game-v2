@@ -64,6 +64,28 @@ contract HoneypotGame is Ownable {
     }
 
     /**
+     * @dev Buy items
+     *
+     * @param itemIds array of item ids
+     * @param amounts array of amount of items corresponding to itemIds
+     */
+    function buyItems(uint[] memory itemIds, uint[] memory amounts) public {
+        require(itemIds.length == amounts.length, "itemIds.length must be equal to amounts.length");
+        require(itemIds.length > 0, "packs must be > 0");
+
+        uint totalCost;
+        for(uint i; i < itemIds.length; i++) {
+            require(itemIds[i] != 0, "item id can not be 0");
+            require(amounts[i] != 0, "items amount can not be 0");
+            require(itemPrices[itemIds[i]] != 0, "item is not salable");
+            totalCost += itemPrices[itemIds[i]] * amounts[i];
+        }
+
+        bank.subtract(msg.sender, totalCost);
+        item.mintBatch(msg.sender, itemIds, amounts);
+    }
+
+    /**
      * @dev Buy slot packs
      *
      * @notice msg.sender must be registered
