@@ -64,6 +64,9 @@ describe("HoneypotGame", async function() {
         // Bee Item: MINTER_ROLE
         const minterRole = await item.MINTER_ROLE();
         await item.grantRole(minterRole, game.address);
+
+        const itemOperatorRole = await item.OPERATOR_ROLE();
+        await item.grantRole(itemOperatorRole, game.address);
     })
 
     it("should successfully register user", async function() {
@@ -154,5 +157,38 @@ describe("HoneypotGame", async function() {
         expect(await item.balanceOf(user.address, 21)).eq(1);
         const tokenBalanceAfter = await token.balanceOf(user.address);
         expect(tokenBalanceBefore.sub(tokenBalanceAfter)).eq(ONE_TOKEN.mul(100));
+    })
+
+    it("should successfully set apiary items", async function() {
+        const [,user] = await ethers.getSigners();
+
+        const apiaryBefore = await land.getApiary(user.address);
+        apiaryBefore.items.forEach(itemId => expect(itemId).eq(0));
+
+        await land.saveSet(5, 100, [21,22,23,24,25,26,27], [100, 100, 100, 100, 100, 100, 100]);
+        await game.connect(user).setApiaryItems([21,0,0,0,0,0,0]);
+
+        // Check that item is presented on apiary
+        const apiaryAfter = await land.getApiary(user.address);
+        expect(apiaryAfter.items[0]).eq(21);
+        expect(apiaryAfter.items[1]).eq(0);
+        expect(apiaryAfter.items[2]).eq(0);
+        expect(apiaryAfter.items[3]).eq(0);
+        expect(apiaryAfter.items[4]).eq(0);
+        expect(apiaryAfter.items[5]).eq(0);
+        expect(apiaryAfter.items[6]).eq(0);
+
+        // Check that item is transferred from user to game
+        expect(await item.balanceOf(user.address, 21)).eq(0);
+        expect(await item.balanceOf(game.address, 21)).eq(1);
+    })
+
+    it("should successfully take off apiary items", async function() {
+        const [,user] = await ethers.getSigners();
+        await game.connect(user).setApiaryItems([0,0,0,0,0,0,0]);
+
+        // Check that item is returned to user
+        expect(await item.balanceOf(user.address, 21)).eq(1);
+        expect(await item.balanceOf(game.address, 21)).eq(0);
     })
 })

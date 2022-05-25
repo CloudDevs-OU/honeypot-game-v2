@@ -11,10 +11,28 @@ contract BeeItem is IBeeItem, ERC1155, AccessControl {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes32 public constant OPERATOR_ROLE = keccak256("OPERATOR_ROLE");
 
+    modifier operatorOrMinter {
+        require(hasRole(OPERATOR_ROLE, msg.sender) || hasRole(MINTER_ROLE, msg.sender), "Only operator or minter");
+        _;
+    }
+
     constructor(string memory uri_) ERC1155(uri_) {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setRoleAdmin(MINTER_ROLE, DEFAULT_ADMIN_ROLE);
         _setRoleAdmin(OPERATOR_ROLE, DEFAULT_ADMIN_ROLE);
+    }
+
+    /**
+     * @dev See {IERC1155-safeTransferFrom}.
+     */
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 id,
+        uint256 amount,
+        bytes calldata data
+    ) public virtual override(IBeeItem, ERC1155) {
+        super.safeTransferFrom(from, to, id, amount, data);
     }
 
     /**
@@ -24,7 +42,7 @@ contract BeeItem is IBeeItem, ERC1155, AccessControl {
      * @param id token identifier
      * @param amount tokens amount that will be added to balance
      */
-    function mint(address to, uint id, uint amount) public onlyRole(MINTER_ROLE) {
+    function mint(address to, uint id, uint amount) public operatorOrMinter {
         _mint(to, id, amount, "");
     }
 
@@ -35,7 +53,7 @@ contract BeeItem is IBeeItem, ERC1155, AccessControl {
      * @param ids  array of token identifiers
      * @param amounts array of tokens amount that will be added to balance
      */
-    function mintBatch(address to, uint[] memory ids, uint[] memory amounts) public onlyRole(MINTER_ROLE) {
+    function mintBatch(address to, uint[] memory ids, uint[] memory amounts) public operatorOrMinter {
         _mintBatch(to, ids, amounts, "");
     }
 

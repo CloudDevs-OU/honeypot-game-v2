@@ -3,12 +3,13 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 import"./interface/IApiaryLand.sol";
 import"./interface/IBeeItem.sol";
 import"./interface/IHoneyBank.sol";
 import"./interface/IUserRegistry.sol";
 
-contract HoneypotGame is Ownable {
+contract HoneypotGame is ERC1155Holder, Ownable {
     IApiaryLand public land;
     IBeeItem public item;
     IHoneyBank public bank;
@@ -96,6 +97,26 @@ contract HoneypotGame is Ownable {
         uint totalCost = packs * 10 * slotPrice;
         bank.subtract(msg.sender, totalCost);
         land.addSlots(msg.sender, packs * 10);
+    }
+
+    /**
+     * @dev Set items to owner apiary. Items that no longer in use will be returned to user
+     * and new items will be taken from user.
+     *
+     * @notice msg.sender must be registered
+     *
+     * @param itemIds array of item ids that must be set. Each item must be appropriate for beeId (item index + 1)
+     */
+    function setApiaryItems(uint[7] memory itemIds) public {
+        (uint[7] memory notUsedItems, uint[7] memory newItems) = land.setApiaryItems(msg.sender, itemIds);
+        for(uint i; i < notUsedItems.length; i++) {
+            if (notUsedItems[i] != 0) {
+                item.safeTransferFrom(address(this), msg.sender, notUsedItems[i], 1, "");
+            }
+            if (newItems[i] != 0) {
+                item.safeTransferFrom(msg.sender, address(this), newItems[i], 1, "");
+            }
+        }
     }
 
     /**
