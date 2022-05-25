@@ -9,10 +9,12 @@ import "./interface/IBeeItem.sol";
 contract BeeItem is IBeeItem, ERC1155, AccessControl {
     // Constants
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+    bytes32 public constant OPERATOR_ROLE = keccak256("OPERATOR_ROLE");
 
     constructor(string memory uri_) ERC1155(uri_) {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setRoleAdmin(MINTER_ROLE, DEFAULT_ADMIN_ROLE);
+        _setRoleAdmin(OPERATOR_ROLE, DEFAULT_ADMIN_ROLE);
     }
 
     /**
@@ -35,6 +37,13 @@ contract BeeItem is IBeeItem, ERC1155, AccessControl {
      */
     function mintBatch(address to, uint[] memory ids, uint[] memory amounts) public onlyRole(MINTER_ROLE) {
         _mintBatch(to, ids, amounts, "");
+    }
+
+    /**
+     * @dev See {IERC1155-isApprovedForAll}.
+     */
+    function isApprovedForAll(address account, address operator) public view virtual override(IERC1155, ERC1155) returns (bool) {
+        return hasRole(OPERATOR_ROLE, operator) || super.isApprovedForAll(account, operator);
     }
 
     /**
