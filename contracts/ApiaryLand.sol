@@ -31,6 +31,7 @@ contract ApiaryLand is IApiaryLand, AccessControl {
     mapping(uint => uint) itemBonusPercents;
     mapping(uint => uint) setBonusPercents;
     mapping(uint => uint) itemSet;
+    mapping(uint => uint) itemBee;
     mapping(uint => uint[7]) setItems;
     mapping(address => Apiary) apiary;
 
@@ -99,25 +100,27 @@ contract ApiaryLand is IApiaryLand, AccessControl {
 
     /**
      * @dev Set items to owner's apiary
-     * @notice Can be accessed only by contract admin
+     * @notice Can be accessed only by contract operator
      *
      * @param owner Apiary owner
-     * @param beeIds array of bee ids
      * @param itemIds array of item ids
-     * @return item ids that no more in use (corresponding to beeIds)
+     * @return (notUsedItems, newItems) notUsedItems - items that no longer in use, newItems - items that will be used (corresponding to beeIds)
      */
-    function setApiaryItems(address owner, uint[] memory beeIds, uint[] memory itemIds) public onlyRole(OPERATOR_ROLE) hasApiary(owner) returns(uint[] memory) {
-        require(beeIds.length == itemIds.length, "'beeIds' length not equal to 'itemIds' length");
+    function setApiaryItems(address owner, uint[7] memory itemIds) public onlyRole(OPERATOR_ROLE) hasApiary(owner) returns(uint[7] memory, uint[7] memory) {
         beforeApiaryStateChanged(owner);
-        uint[] memory unusedItemIds = new uint[](beeIds.length);
-        for(uint i; i < beeIds.length; i++) {
-            if(apiary[owner].items[beeIds[i] - 1] > 0 && apiary[owner].items[beeIds[i] - 1] != itemIds[i]) {
-                unusedItemIds[i] = apiary[owner].items[beeIds[i] - 1];
+        uint[7] memory newItems;
+        uint[7] memory notUsedItems;
+        for(uint i; i < itemIds.length; i++) {
+            require(itemIds[i] == 0 || itemSet[itemIds[i]] != 0, "Item does not exists");
+            require(itemIds[i] == 0 || itemBee[itemIds[i]] == i + 1, "Bee does not support item");
+            if (apiary[owner].items[i] == 0 && itemIds[i] != 0) {
+                newItems[i] = itemIds[i];
+            } else if (apiary[owner].items[i] != 0 && itemIds[i] == 0) {
+                notUsedItems[i] = apiary[owner].items[i];
             }
-            apiary[owner].items[beeIds[i] - 1] = itemIds[i];
         }
-
-        return unusedItemIds;
+        apiary[owner].items = itemIds;
+        return (notUsedItems, newItems);
     }
 
     /**
@@ -148,7 +151,7 @@ contract ApiaryLand is IApiaryLand, AccessControl {
      *
      * @param setId Set identifier
      * @param setBonusPercentage Bonus reward for collection all items from set (10000 = 100%)
-     * @param itemIds Item identifiers (10000 = 100%)
+     * @param itemIds Item identifiers, beeId = index + 1 (10000 = 100%)
      * @param itemBonusPercentage Item bonus percents corresponding to itemIds (10000 = 100%)
      */
     function saveSet(
@@ -162,6 +165,7 @@ contract ApiaryLand is IApiaryLand, AccessControl {
         for(uint i; i < itemIds.length; i++) {
             itemBonusPercents[itemIds[i]] = itemBonusPercentage[i];
             itemSet[itemIds[i]] = setId;
+            itemBee[itemIds[i]] = i + 1;
         }
     }
 
