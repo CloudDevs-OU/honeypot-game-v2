@@ -191,4 +191,26 @@ describe("HoneypotGame", async function() {
         expect(await item.balanceOf(user.address, 21)).eq(1);
         expect(await item.balanceOf(game.address, 21)).eq(0);
     })
+
+    it("should fail to set apiary items to unsupported bee with message 'Bee does not support item'", async function() {
+        const [,user] = await ethers.getSigners();
+        await expect(game.connect(user).setApiaryItems([0,21,0,0,0,0,0])).revertedWith("Bee does not support item");
+    })
+
+    it("should fail to set not owned item with message 'ERC1155: insufficient balance for transfer'", async function() {
+        const [,user] = await ethers.getSigners();
+        await expect(game.connect(user).setApiaryItems([0,22,0,0,0,0,0])).revertedWith("ERC1155: insufficient balance for transfer");
+    })
+
+    it("should successfully do nothing while set apiary items that already set", async function() {
+        const [,user] = await ethers.getSigners();
+
+        await game.connect(user).setApiaryItems([21,0,0,0,0,0,0]);
+        expect(await item.balanceOf(user.address, 21)).eq(0);
+        expect(await item.balanceOf(game.address, 21)).eq(1);
+
+        await game.connect(user).setApiaryItems([21,0,0,0,0,0,0]);
+        expect(await item.balanceOf(user.address, 21)).eq(0);
+        expect(await item.balanceOf(game.address, 21)).eq(1);
+    })
 })
