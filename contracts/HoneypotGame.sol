@@ -7,17 +7,17 @@ import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 import"./interface/IApiaryLand.sol";
 import"./interface/IBeeItem.sol";
 import"./interface/IHoneyBank.sol";
-import"./interface/IUserRegistry.sol";
 
 contract HoneypotGame is ERC1155Holder, Ownable {
     // Structs
-    struct PartnerAccount {
+    struct User {
         address account;
         address upline;
-        uint level;
-        uint[10] earned;
-        uint[10] missed;
-        uint[10] count;
+        uint registrationTimestamp;
+        uint partnerLevel;
+        uint[10] partnerEarnReward;
+        uint[10] partnerMissedReward;
+        uint[10] partnerCount;
     }
 
     // Constants
@@ -27,44 +27,48 @@ contract HoneypotGame is ERC1155Holder, Ownable {
     IApiaryLand public land;
     IBeeItem public item;
     IHoneyBank public bank;
-    IUserRegistry public registry;
 
     uint public registrationPrice;
     uint public slotPrice;
     uint[] beePrices;
     uint[] salableItems;
     mapping(uint => uint) itemPrices;
-    mapping(address => PartnerAccount) partners;
+    mapping(address => User) users;
 
-    constructor(IApiaryLand _land, IBeeItem _item, IHoneyBank _bank, IUserRegistry _registry) {
+    constructor(IApiaryLand _land, IBeeItem _item, IHoneyBank _bank) {
         land = _land;
         item = _item;
         bank = _bank;
-        registry = _registry;
 
         registrationPrice = 100 ether;
         slotPrice = 10 ether;
         beePrices = [250 ether, 500 ether, 1000 ether, 3000 ether, 5000 ether, 10000 ether, 20000 ether];
+
+        // Admin preset
+        users[msg.sender].account = msg.sender;
+        users[msg.sender].registrationTimestamp = block.timestamp;
     }
 
     /**
-     * @dev Register msg.sender in registry, create apiary, subtract registration fee and create partner account
+     * @dev Register user account, create apiary and subtract registration fee
      *
-     * @param referrer account that invite msg.sender
+     * @param upline account that invite msg.sender
      */
-    function register(address referrer) public {
+    function register(address upline) public {
+        require(!isRegistered(msg.sender), "User is already registered");
+        require(upline != address(0), 'Upline can not be zero');
+        require(isRegistered(upline), "Upline is not registered");
+
         // Take registration fee
         bank.subtract(msg.sender, registrationPrice);
-
-        // Register in global user registry
-        registry.register(msg.sender, referrer);
 
         // Create apiary
         land.createApiary(msg.sender);
 
-        // Register partner account
-        partners[msg.sender].account = msg.sender;
-        partners[msg.sender].upline = referrer;
+        // Register user
+        users[msg.sender].account = msg.sender;
+        users[msg.sender].upline = upline;
+        users[msg.sender].registrationTimestamp = block.timestamp;
     }
 
     /**
@@ -84,7 +88,7 @@ contract HoneypotGame is ERC1155Holder, Ownable {
         require(totalCost > 0, "totalCost must be >0");
         bank.subtract(msg.sender, totalCost);
         land.addBees(msg.sender, beeIds, amounts);
-        partners[msg.sender].level = calcUserPartnerLevel(msg.sender);
+        users[msg.sender].partnerLevel = calcUserPartnerLevel(msg.sender);
     }
 
     /**
@@ -142,7 +146,7 @@ contract HoneypotGame is ERC1155Holder, Ownable {
                 item.safeTransferFrom(msg.sender, address(this), newItems[i], 1, "");
             }
         }
-        partners[msg.sender].level = calcUserPartnerLevel(msg.sender);
+        users[msg.sender].partnerLevel = calcUserPartnerLevel(msg.sender);
     }
 
     /**
@@ -209,8 +213,8 @@ contract HoneypotGame is ERC1155Holder, Ownable {
     /**
      * @dev Get PartnerAccount
      */
-    function getPartnerAccount(address account) public view returns(PartnerAccount memory) {
-        return partners[account];
+    function getUser(address account) public view returns(User memory) {
+        return users[account];
     }
 
     /**
@@ -222,6 +226,36 @@ contract HoneypotGame is ERC1155Holder, Ownable {
             prices[i] = itemPrices[salableItems[i]];
         }
         return (salableItems, prices);
+    }
+
+    /**
+     * @dev Get user upline addresses
+     *
+     * @param account user address
+     * @param amount amount of uplines
+     * @return array of upline addresses in order of upline value
+     */
+    function getUplines(address account, uint amount) public view returns(address[] memory) {
+        address[] memory result = new address[](amount);
+
+        uint uplineIndex = 0;
+        address uplineAddress = users[account].upline;
+        while(uplineAddress != address(0) && uplineIndex < amount) {
+            result[uplineIndex++] = uplineAddress;
+            uplineAddress = users[uplineAddress].upline;
+        }
+
+        return result;
+    }
+
+    /**
+     * @dev Check is user registered
+     *
+     * @param account user address for check
+     * @return true/false
+     */
+    function isRegistered(address account) public view returns(bool) {
+        return account != address(0) && users[account].account == account;
     }
 
     /**

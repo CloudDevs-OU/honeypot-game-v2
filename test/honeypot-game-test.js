@@ -3,7 +3,6 @@ const { ethers } = require("hardhat");
 const STABLE_INITIAL_BALANCE = ethers.utils.parseEther("10000");
 const ONE_TOKEN = ethers.utils.parseEther("1");
 
-let registry;
 let bank;
 let item;
 let land;
@@ -12,10 +11,6 @@ let stable;
 let token;
 describe("HoneypotGame", async function() {
     before(async function() {
-        // UserRegistry
-        const UserRegistry = await ethers.getContractFactory("UserRegistry");
-        registry = await UserRegistry.deploy();
-
         // Honey Bank
         const signers = await ethers.getSigners();
         const addresses = signers.map(a => a.address);
@@ -45,7 +40,7 @@ describe("HoneypotGame", async function() {
 
         // HoneypotGame
         const HoneypotGame = await ethers.getContractFactory("HoneypotGame");
-        game = await HoneypotGame.deploy(land.address, item.address, bank.address, registry.address);
+        game = await HoneypotGame.deploy(land.address, item.address, bank.address);
 
         // Grant HoneypotGame roles
 
@@ -56,10 +51,6 @@ describe("HoneypotGame", async function() {
         // Land: OPERATOR_ROLE
         const operatorRole = await land.OPERATOR_ROLE();
         await land.grantRole(operatorRole, game.address);
-
-        // Registry: REGISTER_ROLE
-        const registerRole = await registry.REGISTER_ROLE();
-        await registry.grantRole(registerRole, game.address);
 
         // Bee Item: MINTER_ROLE
         const minterRole = await item.MINTER_ROLE();
@@ -81,17 +72,19 @@ describe("HoneypotGame", async function() {
         expect(tokenBalanceBefore.sub(tokenBalanceAfter)).eq(registrationPrice);
 
         // Check user in registry
-        expect(await registry.isRegistered(user.address)).true;
+        const userAccount = await game.getUser(user.address);
+        expect(userAccount.account).eq(user.address);
+        expect(userAccount.registrationTimestamp).not.eq(0);
 
         // Check user's apiary
         const apiary = await land.getApiary(user.address)
         expect(apiary.owner).eq(user.address);
 
         // Check partner account
-        const partnerAccount = await game.getPartnerAccount(user.address);
+        const partnerAccount = await game.getUser(user.address);
         expect(partnerAccount.account).eq(user.address);
         expect(partnerAccount.upline).eq(admin.address);
-        expect(partnerAccount.level).eq(0);
+        expect(partnerAccount.partnerLevel).eq(0);
     })
 
     it("should successfully buy bees", async function() {
@@ -223,25 +216,25 @@ describe("HoneypotGame", async function() {
     it("should decrease partner level to 0", async function() {
         const [,user] = await ethers.getSigners();
 
-        const before = await game.getPartnerAccount(user.address);
-        expect(before.level).eq(1);
+        const before = await game.getUser(user.address);
+        expect(before.partnerLevel).eq(1);
 
         await game.connect(user).setApiaryItems([0,0,0,0,0,0,0]);
 
-        const after = await game.getPartnerAccount(user.address);
-        expect(after.level).eq(0);
+        const after = await game.getUser(user.address);
+        expect(after.partnerLevel).eq(0);
     })
 
     it("should increase partner level to 1", async function() {
         const [,user] = await ethers.getSigners();
 
-        const before = await game.getPartnerAccount(user.address);
-        expect(before.level).eq(0);
+        const before = await game.getUser(user.address);
+        expect(before.partnerLevel).eq(0);
 
         await game.connect(user).setApiaryItems([21,0,0,0,0,0,0]);
 
-        const after = await game.getPartnerAccount(user.address);
-        expect(after.level).eq(1);
+        const after = await game.getUser(user.address);
+        expect(after.partnerLevel).eq(1);
     })
 
     it("should set partner level to max", async function() {
@@ -253,9 +246,9 @@ describe("HoneypotGame", async function() {
         await game.connect(user).buyItems([22,23,24,25,26,27], [1,1,1,1,1,1]);
         await game.connect(user).setApiaryItems([21,22,23,24,25,26,27]);
 
-        const partner = await game.getPartnerAccount(user.address);
+        const userAccount = await game.getUser(user.address);
         const maxLevel = await game.REWARDABLE_LINES();
-        expect(partner.level).eq(maxLevel);
+        expect(userAccount.partnerLevel).eq(maxLevel);
     })
 
     it("should decrease partner level to 0 after take off all items", async function() {
@@ -263,7 +256,7 @@ describe("HoneypotGame", async function() {
 
         await game.connect(user).setApiaryItems([0,0,0,0,0,0,0]);
 
-        const partner = await game.getPartnerAccount(user.address);
-        expect(partner.level).eq(0);
+        const userAccount = await game.getUser(user.address);
+        expect(userAccount.partnerLevel).eq(0);
     })
 })
