@@ -257,4 +257,13 @@ describe("HoneypotGame", async function() {
         const maxLevel = await game.REWARDABLE_LINES();
         expect(partner.level).eq(maxLevel);
     })
+
+    it("should decrease partner level to 0 after take off all items", async function() {
+        const [,user] = await ethers.getSigners();
+
+        await game.connect(user).setApiaryItems([0,0,0,0,0,0,0]);
+
+        const partner = await game.getPartnerAccount(user.address);
+        expect(partner.level).eq(0);
+    })
 })
