@@ -133,14 +133,18 @@ describe("HoneypotGame", async function() {
     it("should send partner reward to admin", async function() {
         const [admin,user] = await ethers.getSigners();
 
+        const adminAccountBefore = await game.getUser(admin.address);
         const tokenBalanceBefore = await token.balanceOf(admin.address);
         await game.connect(user).buyBees([1], [1]);
         const tokenBalanceAfter = await token.balanceOf(admin.address);
 
         const rewardPercents = await game.getPartnerRewardPercents();
         const beePrices = await game.getBeePrices();
-        const expectedBalanceDiff = beePrices[0].mul(rewardPercents[0]).div(10000);
-        expect(tokenBalanceAfter.sub(tokenBalanceBefore)).eq(expectedBalanceDiff);
+        const reward = beePrices[0].mul(rewardPercents[0]).div(10000);
+        expect(tokenBalanceAfter.sub(tokenBalanceBefore)).eq(reward);
+
+        const adminAccountAfter = await game.getUser(admin.address);
+        expect(adminAccountAfter.partnerEarnReward[0].sub(adminAccountBefore.partnerEarnReward[0])).eq(reward);
     })
 
     it("should successfully buy slots", async function() {
