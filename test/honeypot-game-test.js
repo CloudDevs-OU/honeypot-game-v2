@@ -87,6 +87,19 @@ describe("HoneypotGame", async function() {
         expect(partnerAccount.partnerLevel).eq(0);
     })
 
+    it("should update partners count while new user registration", async function() {
+        const [admin, user, newUser] = await ethers.getSigners();
+        await game.connect(newUser).register(user.address);
+
+        const userAccount = await game.getUser(user.address);
+        expect(userAccount.partnerCount[0]).eq(1);
+        expect(userAccount.partnerCount[1]).eq(0);
+
+        const adminAccount = await game.getUser(admin.address);
+        expect(adminAccount.partnerCount[0]).eq(1);
+        expect(adminAccount.partnerCount[1]).eq(1);
+    })
+
     it("should successfully buy bees", async function() {
         const [,user] = await ethers.getSigners();
 

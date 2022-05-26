@@ -69,6 +69,12 @@ contract HoneypotGame is ERC1155Holder, Ownable {
         users[msg.sender].account = msg.sender;
         users[msg.sender].upline = upline;
         users[msg.sender].registrationTimestamp = block.timestamp;
+
+        // Update upline partner counts
+        address[] memory uplines = getUplines(msg.sender, REWARDABLE_LINES);
+        for(uint line; line < uplines.length && uplines[line] != address(0); line++) {
+            users[uplines[line]].partnerCount[line]++;
+        }
     }
 
     /**
