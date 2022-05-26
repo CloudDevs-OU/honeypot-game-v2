@@ -32,6 +32,7 @@ contract HoneypotGame is ERC1155Holder, Ownable {
     uint public slotPrice;
     uint[] beePrices;
     uint[] salableItems;
+    uint[10] partnerRewardPercents;
     mapping(uint => uint) itemPrices;
     mapping(address => User) users;
 
@@ -43,6 +44,7 @@ contract HoneypotGame is ERC1155Holder, Ownable {
         registrationPrice = 100 ether;
         slotPrice = 10 ether;
         beePrices = [250 ether, 500 ether, 1000 ether, 3000 ether, 5000 ether, 10000 ether, 20000 ether];
+        partnerRewardPercents = [500, 400, 300, 200, 100, 100, 100, 100, 100, 100]; // 1 % = 100
 
         // Admin preset
         users[msg.sender].account = msg.sender;
@@ -96,6 +98,7 @@ contract HoneypotGame is ERC1155Holder, Ownable {
         bank.subtract(msg.sender, totalCost);
         land.addBees(msg.sender, beeIds, amounts);
         users[msg.sender].partnerLevel = calcUserPartnerLevel(msg.sender);
+        sendPartnerReward(msg.sender, totalCost);
     }
 
     /**
@@ -118,6 +121,7 @@ contract HoneypotGame is ERC1155Holder, Ownable {
 
         bank.subtract(msg.sender, totalCost);
         item.mintBatch(msg.sender, itemIds, amounts);
+        sendPartnerReward(msg.sender, totalCost);
     }
 
     /**
@@ -208,6 +212,43 @@ contract HoneypotGame is ERC1155Holder, Ownable {
      */
     function setBeePrices(uint[] memory _beePrices) public onlyOwner {
         beePrices = _beePrices;
+    }
+
+    /**
+     * @dev Update partner reward percents
+     *
+     * @notice Can be accessed only by contract admin
+     *
+     * @param _partnerRewardPercents new partner reward percents
+     */
+    function setPartnerRewardPercents(uint[10] memory _partnerRewardPercents) public onlyOwner {
+        partnerRewardPercents = _partnerRewardPercents;
+    }
+
+    /**
+     * @dev Send partner reward to uplines
+     *
+     * @param referral user who made a buy
+     * @param spentAmount tokens amount that was spent
+     */
+    function sendPartnerReward(address referral, uint spentAmount) private {
+        address[] memory upline = getUplines(referral, REWARDABLE_LINES);
+        for(uint i; i < upline.length && upline[i] != address(0); i++) {
+            uint reward = spentAmount * partnerRewardPercents[i] / 10000;
+            if(users[upline[i]].partnerLevel > i) {
+                users[upline[i]].partnerEarnReward[i] += reward;
+                bank.add(users[upline[i]].account, reward);
+            } else {
+                users[upline[i]].partnerMissedReward[i] += reward;
+            }
+        }
+    }
+
+    /**
+     * @dev Get partner reward percents
+     */
+    function getPartnerRewardPercents() public view returns(uint[10] memory) {
+        return partnerRewardPercents;
     }
 
     /**
