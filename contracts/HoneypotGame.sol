@@ -10,6 +10,21 @@ import"./interface/IHoneyBank.sol";
 import"./interface/IUserRegistry.sol";
 
 contract HoneypotGame is ERC1155Holder, Ownable {
+    // Structs
+    struct PartnerAccount {
+        address account;
+        address upline;
+        uint level;
+        uint[10] earned;
+        uint[10] missed;
+        uint[10] count;
+    }
+
+    // Constants
+    uint constant public REWARDABLE_LINES = 10;
+    uint constant public DEFAULT_PARTNER_LEVEL = 1;
+
+    // State
     IApiaryLand public land;
     IBeeItem public item;
     IHoneyBank public bank;
@@ -18,8 +33,9 @@ contract HoneypotGame is ERC1155Holder, Ownable {
     uint public registrationPrice;
     uint public slotPrice;
     uint[] beePrices;
-    mapping(uint => uint) itemPrices;
     uint[] salableItems;
+    mapping(uint => uint) itemPrices;
+    mapping(address => PartnerAccount) partners;
 
     constructor(IApiaryLand _land, IBeeItem _item, IHoneyBank _bank, IUserRegistry _registry) {
         land = _land;
@@ -33,14 +49,24 @@ contract HoneypotGame is ERC1155Holder, Ownable {
     }
 
     /**
-     * @dev Register msg.sender in registry, create apiary and subtract registration fee
+     * @dev Register msg.sender in registry, create apiary, subtract registration fee and create partner account
      *
      * @param referrer account that invite msg.sender
      */
     function register(address referrer) public {
+        // Take registration fee
         bank.subtract(msg.sender, registrationPrice);
+
+        // Register in global user registry
         registry.register(msg.sender, referrer);
+
+        // Create apiary
         land.createApiary(msg.sender);
+
+        // Register partner account
+        partners[msg.sender].account = msg.sender;
+        partners[msg.sender].upline = referrer;
+        partners[msg.sender].level = DEFAULT_PARTNER_LEVEL;
     }
 
     /**
@@ -178,6 +204,13 @@ contract HoneypotGame is ERC1155Holder, Ownable {
      */
     function getBeePrices() public view returns(uint[] memory) {
         return beePrices;
+    }
+
+    /**
+     * @dev Get PartnerAccount
+     */
+    function getPartnerAccount(address account) public view returns(PartnerAccount memory) {
+        return partners[account];
     }
 
     /**

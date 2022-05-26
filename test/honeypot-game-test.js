@@ -86,6 +86,14 @@ describe("HoneypotGame", async function() {
         // Check user's apiary
         const apiary = await land.getApiary(user.address)
         expect(apiary.owner).eq(user.address);
+
+        // Check partner account
+        const partnerAccount = await game.getPartnerAccount(user.address);
+        expect(partnerAccount.account).eq(user.address);
+        expect(partnerAccount.upline).eq(admin.address);
+
+        const defaultPartnerLevel = await game.DEFAULT_PARTNER_LEVEL();
+        expect(partnerAccount.level).eq(defaultPartnerLevel);
     })
 
     it("should successfully buy bees", async function() {
