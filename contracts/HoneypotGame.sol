@@ -22,7 +22,6 @@ contract HoneypotGame is ERC1155Holder, Ownable {
 
     // Constants
     uint constant public REWARDABLE_LINES = 10;
-    uint constant public DEFAULT_PARTNER_LEVEL = 1;
 
     // State
     IApiaryLand public land;
@@ -66,7 +65,6 @@ contract HoneypotGame is ERC1155Holder, Ownable {
         // Register partner account
         partners[msg.sender].account = msg.sender;
         partners[msg.sender].upline = referrer;
-        partners[msg.sender].level = DEFAULT_PARTNER_LEVEL;
     }
 
     /**
@@ -86,6 +84,7 @@ contract HoneypotGame is ERC1155Holder, Ownable {
         require(totalCost > 0, "totalCost must be >0");
         bank.subtract(msg.sender, totalCost);
         land.addBees(msg.sender, beeIds, amounts);
+        partners[msg.sender].level = calcUserPartnerLevel(msg.sender);
     }
 
     /**
@@ -143,6 +142,7 @@ contract HoneypotGame is ERC1155Holder, Ownable {
                 item.safeTransferFrom(msg.sender, address(this), newItems[i], 1, "");
             }
         }
+        partners[msg.sender].level = calcUserPartnerLevel(msg.sender);
     }
 
     /**
@@ -222,5 +222,24 @@ contract HoneypotGame is ERC1155Holder, Ownable {
             prices[i] = itemPrices[salableItems[i]];
         }
         return (salableItems, prices);
+    }
+
+    /**
+     * @dev Calc user partner level based on items
+     */
+    function calcUserPartnerLevel(address account) private view returns(uint) {
+        (uint[7] memory bees, uint[7] memory items, bool isSet) = land.getBeesAndItems(account);
+        uint level;
+        for(uint i; i < bees.length; i++) {
+            if(bees[i] > 0 && items[i] > 0) {
+                level++;
+            }
+        }
+
+        if(level == 7 && isSet) {
+            level = REWARDABLE_LINES;
+        }
+
+        return level;
     }
 }

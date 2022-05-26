@@ -214,6 +214,16 @@ contract ApiaryLand is IApiaryLand, AccessControl {
     }
 
     /**
+     * @dev Get owner's bees and items
+     *
+     * @param owner Apiary owner
+     * @return (bees, items, isSet)
+     */
+    function getBeesAndItems(address owner) public view returns(uint[7] memory, uint[7] memory, bool) {
+        return (apiary[owner].bees, apiary[owner].items, getSetId(apiary[owner].items) > 0);
+    }
+
+    /**
      * @dev Get setId by itemIds
      *
      * @param itemIds array of item ids

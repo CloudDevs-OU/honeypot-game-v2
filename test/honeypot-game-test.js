@@ -29,10 +29,10 @@ describe("HoneypotGame", async function() {
         token = await ERC20.attach(await bank.token());
 
         const infinityTokens = ethers.utils.parseEther("99999999999")
-        const tenThousandTokens = ethers.utils.parseEther("10000")
+        const oneHundredThousandTokens = ethers.utils.parseEther("100000")
         for (let i = 0; i < signers.length; i++) {
             await stable.connect(signers[i]).approve(bank.address, infinityTokens);
-            await bank.connect(signers[i]).buyTokens(tenThousandTokens);
+            await bank.connect(signers[i]).buyTokens(oneHundredThousandTokens);
         }
 
         // BeeItem
@@ -91,9 +91,7 @@ describe("HoneypotGame", async function() {
         const partnerAccount = await game.getPartnerAccount(user.address);
         expect(partnerAccount.account).eq(user.address);
         expect(partnerAccount.upline).eq(admin.address);
-
-        const defaultPartnerLevel = await game.DEFAULT_PARTNER_LEVEL();
-        expect(partnerAccount.level).eq(defaultPartnerLevel);
+        expect(partnerAccount.level).eq(0);
     })
 
     it("should successfully buy bees", async function() {
@@ -220,5 +218,43 @@ describe("HoneypotGame", async function() {
         await game.connect(user).setApiaryItems([21,0,0,0,0,0,0]);
         expect(await item.balanceOf(user.address, 21)).eq(0);
         expect(await item.balanceOf(game.address, 21)).eq(1);
+    })
+
+    it("should decrease partner level to 0", async function() {
+        const [,user] = await ethers.getSigners();
+
+        const before = await game.getPartnerAccount(user.address);
+        expect(before.level).eq(1);
+
+        await game.connect(user).setApiaryItems([0,0,0,0,0,0,0]);
+
+        const after = await game.getPartnerAccount(user.address);
+        expect(after.level).eq(0);
+    })
+
+    it("should increase partner level to 1", async function() {
+        const [,user] = await ethers.getSigners();
+
+        const before = await game.getPartnerAccount(user.address);
+        expect(before.level).eq(0);
+
+        await game.connect(user).setApiaryItems([21,0,0,0,0,0,0]);
+
+        const after = await game.getPartnerAccount(user.address);
+        expect(after.level).eq(1);
+    })
+
+    it("should set partner level to max", async function() {
+        const [,user] = await ethers.getSigners();
+
+        await game.connect(user).buySlotPacks(100);
+        await game.connect(user).buyBees([3,4,5,6,7], [1,1,1,1,1]);
+        await game.addItemsForSale([22,23,24,25,26,27], [ONE_TOKEN,ONE_TOKEN,ONE_TOKEN,ONE_TOKEN,ONE_TOKEN,ONE_TOKEN]);
+        await game.connect(user).buyItems([22,23,24,25,26,27], [1,1,1,1,1,1]);
+        await game.connect(user).setApiaryItems([21,22,23,24,25,26,27]);
+
+        const partner = await game.getPartnerAccount(user.address);
+        const maxLevel = await game.REWARDABLE_LINES();
+        expect(partner.level).eq(maxLevel);
     })
 })
