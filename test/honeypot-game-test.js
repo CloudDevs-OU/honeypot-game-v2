@@ -87,6 +87,13 @@ describe("HoneypotGame", async function() {
         expect(partnerAccount.partnerLevel).eq(0);
     })
 
+    it("should set admin partner level to max by default", async function() {
+        const [admin] = await ethers.getSigners();
+        const adminAccount = await game.getUser(admin.address);
+        const maxLines = await game.REWARDABLE_LINES();
+        expect(adminAccount.partnerLevel).eq(maxLines)
+    })
+
     it("should update partners count while new user registration", async function() {
         const [admin, user, newUser] = await ethers.getSigners();
         await game.connect(newUser).register(user.address);

@@ -47,6 +47,7 @@ contract HoneypotGame is ERC1155Holder, Ownable {
         // Admin preset
         users[msg.sender].account = msg.sender;
         users[msg.sender].registrationTimestamp = block.timestamp;
+        users[msg.sender].partnerLevel = REWARDABLE_LINES;
     }
 
     /**
@@ -268,6 +269,10 @@ contract HoneypotGame is ERC1155Holder, Ownable {
      * @dev Calc user partner level based on items
      */
     function calcUserPartnerLevel(address account) private view returns(uint) {
+        if (account == owner()) {
+            return REWARDABLE_LINES;
+        }
+
         (uint[7] memory bees, uint[7] memory items, bool isSet) = land.getBeesAndItems(account);
         uint level;
         for(uint i; i < bees.length; i++) {
