@@ -8,4 +8,5 @@ interface IApiaryLand {
     function addSlots(address owner, uint amount) external;
     function setApiaryItems(address owner, uint[7] memory itemIds) external returns(uint[7] memory, uint[7] memory);
     function getBeesAndItems(address owner) external view returns(uint[7] memory, uint[7] memory, bool);
+    function claimProfit(address owner) external returns(uint);
 }

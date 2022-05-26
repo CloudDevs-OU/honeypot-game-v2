@@ -161,6 +161,18 @@ contract HoneypotGame is ERC1155Holder, Ownable {
     }
 
     /**
+     * @dev Claim available profit
+     *
+     * @notice msg.sender must be registered
+     *
+     */
+    function claimProfit() public {
+        uint profit = land.claimProfit(msg.sender);
+        require(profit > 0, "Can't claim 0 profit");
+        bank.add(msg.sender, profit);
+    }
+
+    /**
      * @dev Add items for sale
      *
      * @notice Can be accessed only by contract admin
