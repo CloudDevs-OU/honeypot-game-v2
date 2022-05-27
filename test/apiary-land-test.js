@@ -250,9 +250,9 @@ describe("ApiaryLand", async function() {
         await expect(land.setApiaryItems(owner.address, [1, 2, 4, 0, 0, 6, 0])).revertedWith("Bee does not support item");
     })
 
-    it("should set default moodRecoveryTime to 7 days", async function() {
+    it("should set default moodRecoveryTime to 6 days", async function() {
         const moodRecoveryTime = await land.moodRecoveryTime();
-        expect(moodRecoveryTime).eq(7*24*60*60);
+        expect(moodRecoveryTime).eq(6*24*60*60);
     })
 
     it("should set moodRecoveryTime to 2 weeks", async function() {

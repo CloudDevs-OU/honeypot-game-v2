@@ -49,7 +49,7 @@ contract ApiaryLand is IApiaryLand, AccessControl {
     }
 
     constructor() {
-        moodRecoveryTime = 7 days;
+        moodRecoveryTime = 6 days;
         noneProfitTimeout = 1 days;
 
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
