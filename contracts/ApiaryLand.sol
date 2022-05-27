@@ -12,6 +12,7 @@ contract ApiaryLand is IApiaryLand, AccessControl {
         uint slots;
         uint[7] bees;
         uint[7] items;
+        uint workStartTime;
         uint lastClaimTimestamp;
         uint lastDeferredPayoutTimestamp;
         uint deferredProfit;
@@ -27,6 +28,7 @@ contract ApiaryLand is IApiaryLand, AccessControl {
 
     // State
     uint public moodRecoveryTime;
+    uint public noneProfitTimeout;
     uint[7] beeDailyProfits = [1.5 ether, 3.5 ether, 7.5 ether, 25 ether, 45 ether, 95 ether, 200 ether];
     mapping(uint => uint) itemBonusPercents;
     mapping(uint => uint) setBonusPercents;
@@ -48,6 +50,7 @@ contract ApiaryLand is IApiaryLand, AccessControl {
 
     constructor() {
         moodRecoveryTime = 7 days;
+        noneProfitTimeout = 1 days;
 
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setRoleAdmin(OPERATOR_ROLE, DEFAULT_ADMIN_ROLE);
@@ -64,8 +67,7 @@ contract ApiaryLand is IApiaryLand, AccessControl {
         require(apiary[account].owner == address(0), "Apiary is already created");
         apiary[account].owner = account;
         apiary[account].slots = DEFAULT_SLOTS;
-        apiary[account].lastClaimTimestamp = block.timestamp;
-        apiary[account].lastDeferredPayoutTimestamp = block.timestamp;
+        apiary[account].workStartTime = block.timestamp;
     }
 
     /**
@@ -134,6 +136,16 @@ contract ApiaryLand is IApiaryLand, AccessControl {
     }
 
     /**
+     * @dev Set none profit timeout after claiming
+     * @notice Can be accessed only by contract admin
+     *
+     * @param _noneProfitTimeout New none profit timeout
+     */
+    function setNoneProfitTimeout(uint _noneProfitTimeout) public onlyRole(DEFAULT_ADMIN_ROLE) {
+        noneProfitTimeout = _noneProfitTimeout;
+    }
+
+    /**
      * @dev Set bee daily profits
      * @notice Can be accessed only by contract admin
      *
@@ -193,8 +205,9 @@ contract ApiaryLand is IApiaryLand, AccessControl {
     function claimProfit(address owner) public onlyRole(OPERATOR_ROLE) hasApiary(owner) returns(uint) {
         uint profit = calcAvailableProfitForClaiming(owner, apiary[owner].bees, apiary[owner].items);
         apiary[owner].totalClaimedProfit += profit;
+        apiary[owner].workStartTime = block.timestamp + noneProfitTimeout;
         apiary[owner].lastClaimTimestamp = block.timestamp;
-        apiary[owner].lastDeferredPayoutTimestamp = block.timestamp;
+        apiary[owner].lastDeferredPayoutTimestamp = 0;
         apiary[owner].deferredProfit = 0;
 
         return profit;
@@ -209,7 +222,16 @@ contract ApiaryLand is IApiaryLand, AccessControl {
      * @param owner Apiary owner
      */
     function beforeApiaryStateChanged(address owner) private {
-        apiary[owner].deferredProfit += calcPureProfit(apiary[owner].bees, apiary[owner].items, block.timestamp - apiary[owner].lastDeferredPayoutTimestamp);
+        // If bees are not working right now
+        if (block.timestamp < apiary[owner].workStartTime) {
+            return;
+        }
+
+        if (apiary[owner].lastDeferredPayoutTimestamp == 0) {
+            apiary[owner].deferredProfit += calcPureProfit(apiary[owner].bees, apiary[owner].items, block.timestamp - apiary[owner].workStartTime);
+        } else {
+            apiary[owner].deferredProfit += calcPureProfit(apiary[owner].bees, apiary[owner].items, block.timestamp - apiary[owner].lastDeferredPayoutTimestamp);
+        }
         apiary[owner].lastDeferredPayoutTimestamp = block.timestamp;
     }
 
@@ -290,9 +312,17 @@ contract ApiaryLand is IApiaryLand, AccessControl {
      * @return owner's apiary mood from -10000 up to +10000
      */
     function getApiaryMood(address owner) public view returns(int) {
-        uint timeSpent = block.timestamp - apiary[owner].lastClaimTimestamp;
+        if (apiary[owner].totalClaimedProfit == 0) {
+            return 10000;
+        }
+
+        if (block.timestamp < apiary[owner].workStartTime) {
+            return -10000;
+        }
+
+        uint timeSpent = block.timestamp - apiary[owner].workStartTime;
         if (timeSpent >= moodRecoveryTime) {
-            return int(10000);
+            return 10000;
         }
 
         return int(20000000 * timeSpent / moodRecoveryTime / 1000) - int(10000);
@@ -341,7 +371,16 @@ contract ApiaryLand is IApiaryLand, AccessControl {
         uint[7] memory bees,
         uint[7] memory items
     ) public view returns(uint) {
-        uint notDeferredProfit = calcPureProfit(bees, items, block.timestamp - apiary[owner].lastDeferredPayoutTimestamp);
+        if(block.timestamp < apiary[owner].workStartTime) {
+            return 0;
+        }
+
+        uint notDeferredProfit;
+        if (apiary[owner].lastDeferredPayoutTimestamp == 0) {
+            calcPureProfit(bees, items, block.timestamp - apiary[owner].workStartTime);
+        } else {
+            calcPureProfit(bees, items, block.timestamp - apiary[owner].lastDeferredPayoutTimestamp);
+        }
         // Apply mood factor
         return (notDeferredProfit + apiary[owner].deferredProfit) * uint(int(10000) + getApiaryMood(owner)) / 10000;
     }

@@ -267,10 +267,10 @@ describe("ApiaryLand", async function() {
         await expect(land.connect(thirdPerson).setMoodRecoveryTime(0)).reverted;
     })
 
-    it("should set -10000 apiary mood for empty apiary", async function() {
+    it("should set 10000 apiary mood for empty apiary", async function() {
         const [, owner] = await ethers.getSigners();
         const mood = await land.getApiaryMood(owner.address);
-        expect(mood).eq(-10000);
+        expect(mood).eq(10000);
     })
 
     it("should fail to set new beeDailyProfits without admin role", async function() {
