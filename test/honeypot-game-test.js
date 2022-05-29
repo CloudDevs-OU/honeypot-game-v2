@@ -53,9 +53,6 @@ describe("HoneypotGame", async function() {
         await land.grantRole(operatorRole, game.address);
 
         // Bee Item: MINTER_ROLE
-        const minterRole = await item.MINTER_ROLE();
-        await item.grantRole(minterRole, game.address);
-
         const itemOperatorRole = await item.OPERATOR_ROLE();
         await item.grantRole(itemOperatorRole, game.address);
     })
