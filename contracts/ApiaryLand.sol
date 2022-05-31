@@ -398,15 +398,17 @@ contract ApiaryLand is IApiaryLand, AccessControl {
         uint[7] memory items,
         uint period
     ) public view returns(uint){
-        uint profit;
+        uint beesProfit;
+        uint itemsProfit;
 
         // Calc bees profit (+ items bonus)
         for(uint i; i < bees.length; i++) {
             // profit = dailyProfit * beesAmount * itemBonusPercent * daysSpent
-            profit += beeDailyProfits[i] * bees[i] * (10000 + itemBonusPercents[items[i]]) * period / 1 days / 10000;
+            beesProfit += beeDailyProfits[i] * bees[i] * period / 1 days;
+            itemsProfit += beeDailyProfits[i] * bees[i] * itemBonusPercents[items[i]] * period / 1 days / 10000;
         }
 
         // Apply set bonus
-        return profit * (10000 + setBonusPercents[getSetId(items)]) / 10000;
+        return beesProfit + itemsProfit + (beesProfit * setBonusPercents[getSetId(items)] / 1000);
     }
 }
