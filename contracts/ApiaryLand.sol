@@ -403,7 +403,6 @@ contract ApiaryLand is IApiaryLand, AccessControl {
 
         // Calc bees profit (+ items bonus)
         for(uint i; i < bees.length; i++) {
-            // profit = dailyProfit * beesAmount * itemBonusPercent * daysSpent
             beesProfit += beeDailyProfits[i] * bees[i] * period / 1 days;
             itemsProfit += beeDailyProfits[i] * bees[i] * itemBonusPercents[items[i]] * period / 1 days / 10000;
         }
