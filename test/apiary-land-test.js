@@ -97,10 +97,9 @@ describe("ApiaryLand", async function() {
         const slots = await land.getBeeSlots();
 
         const usedSlotsBefore = await land.getUsedSlots(owner.address);
-        await land.addBees(owner.address, [1], [2]);
+        await land.addBees(owner.address, [1, 2, 4, 6], [2, 1, 1, 1]);
         const usedSlotsAfter = await land.getUsedSlots(owner.address);
-
-        expect(usedSlotsAfter).eq(usedSlotsBefore.add(slots[0] * 2));
+        expect(usedSlotsAfter).eq(usedSlotsBefore.add(slots[0] * 2).add(slots[1]).add(slots[5]).add(slots[3]));
     })
 
     it("should fail to add bees with message 'Not enough slots'", async function() {

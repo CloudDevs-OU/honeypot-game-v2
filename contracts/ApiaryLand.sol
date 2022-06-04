@@ -115,6 +115,8 @@ contract ApiaryLand is IApiaryLand, AccessControl {
         for(uint i; i < itemIds.length; i++) {
             require(itemIds[i] == 0 || itemSet[itemIds[i]] != 0, "Item does not exists");
             require(itemIds[i] == 0 || itemBee[itemIds[i]] == i + 1, "Bee does not support item");
+            require(itemIds[i] == 0 || apiary[owner].bees[i] > 0, "Can't use item without bee");
+
             if (apiary[owner].items[i] == 0 && itemIds[i] != 0) {
                 newItems[i] = itemIds[i];
             } else if (apiary[owner].items[i] != 0 && itemIds[i] == 0) {
@@ -249,7 +251,7 @@ contract ApiaryLand is IApiaryLand, AccessControl {
      * @dev Get setId by itemIds
      *
      * @param itemIds array of item ids
-     * @return setId or 0 if items not fro the same set
+     * @return setId or 0 if items not from the same set
      */
     function getSetId(uint[7] memory itemIds) public view returns(uint) {
         for(uint i = 1; i < itemIds.length; i++) {
