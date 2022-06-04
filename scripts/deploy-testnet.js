@@ -81,19 +81,19 @@ async function main() {
     })
 
     await run("Save 'common' set", async () => {
-        await land.saveSet(1, 1000, [1,2,3,4,5,6,7], [1000,1000,1000,1000,1000,1000,1000]) // Common Set 10%
+        await land.saveSet(1, 1000, [1,2,3,4,5,6,7], [1000,1000,1000,1000,1000,1000,1000])
     })
 
     await run("Save 'uncommon' set", async () => {
-        await land.saveSet(2, 2000, [8,9,10,11,12,13,14], [2000,2000,2000,2000,2000,2000,2000]) // Uncommon Set 20%
+        await land.saveSet(2, 2000, [8,9,10,11,12,13,14], [2000,2000,2000,2000,2000,2000,2000])
     })
 
     await run("Save 'master' set", async () => {
-        await land.saveSet(3, 3000, [15,16,17,18,19,20,21], [3000,3000,3000,3000,3000,3000,3000]) // Master Set 30%
+        await land.saveSet(3, 3000, [15,16,17,18,19,20,21], [3000,3000,3000,3000,3000,3000,3000])
     })
 
     await run("Save 'epic' set", async () => {
-        await land.saveSet(4, 4000, [22,23,24,25,26,27,28], [4000,4000,4000,4000,4000,4000,4000]) // Epic Set 40%
+        await land.saveSet(4, 4000, [22,23,24,25,26,27,28], [4000,4000,4000,4000,4000,4000,4000])
     })
 
     await run("Add items for sale", async () => {
@@ -136,10 +136,6 @@ async function run(name, task) {
     process.stdout.write(`Run '${name}'...`);
     await task();
     console.log("[DONE]");
-}
-
-function link(contractAddress) {
-    return `https://testnet.bscscan.com/address/${contractAddress}`;
 }
 
 function eth(value) {
