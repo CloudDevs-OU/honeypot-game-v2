@@ -97,7 +97,6 @@ contract HoneypotGame is ERC1155Holder, Ownable {
         require(totalCost > 0, "totalCost must be >0");
         bank.subtract(msg.sender, totalCost);
         land.addBees(msg.sender, beeIds, amounts);
-        users[msg.sender].partnerLevel = calcUserPartnerLevel(msg.sender);
         sendPartnerReward(msg.sender, totalCost);
     }
 
@@ -157,7 +156,7 @@ contract HoneypotGame is ERC1155Holder, Ownable {
                 item.safeTransferFrom(msg.sender, address(this), newItems[i], 1, "");
             }
         }
-        users[msg.sender].partnerLevel = calcUserPartnerLevel(msg.sender);
+        recalcUserPartnerLevel(msg.sender);
     }
 
     /**
@@ -257,6 +256,29 @@ contract HoneypotGame is ERC1155Holder, Ownable {
     }
 
     /**
+     * @dev Recalculate user partner level based on bees with items
+     */
+    function recalcUserPartnerLevel(address account) private {
+        if (account == owner()) {
+            return;
+        }
+
+        (uint[7] memory bees, uint[7] memory items, bool isSet) = land.getBeesAndItems(account);
+        uint level;
+        for(uint i; i < bees.length; i++) {
+            if(bees[i] > 0 && items[i] > 0) {
+                level++;
+            }
+        }
+
+        if(level == 7 && isSet) {
+            level = REWARDABLE_LINES;
+        }
+
+        users[msg.sender].partnerLevel = level;
+    }
+
+    /**
      * @dev Get partner reward percents
      */
     function getPartnerRewardPercents() public view returns(uint[10] memory) {
@@ -316,28 +338,5 @@ contract HoneypotGame is ERC1155Holder, Ownable {
      */
     function isRegistered(address account) public view returns(bool) {
         return account != address(0) && users[account].account == account;
-    }
-
-    /**
-     * @dev Calc user partner level based on items
-     */
-    function calcUserPartnerLevel(address account) private view returns(uint) {
-        if (account == owner()) {
-            return REWARDABLE_LINES;
-        }
-
-        (uint[7] memory bees, uint[7] memory items, bool isSet) = land.getBeesAndItems(account);
-        uint level;
-        for(uint i; i < bees.length; i++) {
-            if(bees[i] > 0 && items[i] > 0) {
-                level++;
-            }
-        }
-
-        if(level == 7 && isSet) {
-            level = REWARDABLE_LINES;
-        }
-
-        return level;
     }
 }
