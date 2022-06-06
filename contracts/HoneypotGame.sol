@@ -12,6 +12,7 @@ contract HoneypotGame is ERC1155Holder, Ownable {
     // Structs
     struct User {
         address account;
+        string[] accountAliases;
         address upline;
         uint registrationTimestamp;
         uint partnerLevel;
@@ -29,12 +30,14 @@ contract HoneypotGame is ERC1155Holder, Ownable {
     IHoneyBank public bank;
 
     uint public registrationPrice;
+    uint public aliasPrice;
     uint public slotPrice;
     uint[] beePrices;
     uint[] salableItems;
     uint[10] partnerRewardPercents;
     mapping(uint => uint) itemPrices;
     mapping(address => User) users;
+    mapping(string => address) aliasAddress;
 
     constructor(IApiaryLand _land, IBeeItem _item, IHoneyBank _bank) {
         land = _land;
@@ -43,6 +46,7 @@ contract HoneypotGame is ERC1155Holder, Ownable {
 
         registrationPrice = 100 ether;
         slotPrice = 10 ether;
+        aliasPrice = 10000 ether;
         beePrices = [250 ether, 500 ether, 1000 ether, 3000 ether, 5000 ether, 10000 ether, 20000 ether];
         partnerRewardPercents = [500, 400, 300, 200, 100, 100, 100, 100, 100, 100]; // 1 % = 100
 
@@ -172,6 +176,33 @@ contract HoneypotGame is ERC1155Holder, Ownable {
     }
 
     /**
+     * @dev Buy alias for custom invite links
+     *
+     * @param ref alias
+     *
+     * @notice msg.sender must be registered
+     *
+     */
+    function buyAlias(string memory ref) public {
+        require(users[msg.sender].account == msg.sender, "Only registered user");
+        require(users[msg.sender].accountAliases.length < 10, "Max 10 aliases");
+        bytes memory refBytes = bytes(ref);
+        require(refBytes.length >= 3 && refBytes.length <= 20, "ref size must be >= 3 and <= 20");
+        require(aliasAddress[ref] == address(0), "Alias is already taken");
+        for(uint i; i < refBytes.length; i++) {
+            require(
+                uint8(refBytes[i]) >= 48 && uint8(refBytes[i]) <= 57 ||  // 0-9
+                uint8(refBytes[i]) >= 65 && uint8(refBytes[i]) <= 90 ||  // a-z
+                uint8(refBytes[i]) >= 97 && uint8(refBytes[i]) <= 122    // A-Z
+            , "Only alphanumeric symbols");
+        }
+
+        aliasAddress[ref] = msg.sender;
+        users[msg.sender].accountAliases.push(ref);
+        bank.subtract(msg.sender, aliasPrice);
+    }
+
+    /**
      * @dev Add items for sale
      *
      * @notice Can be accessed only by contract admin
@@ -237,6 +268,17 @@ contract HoneypotGame is ERC1155Holder, Ownable {
     }
 
     /**
+     * @dev Update alias price
+     *
+     * @notice Can be accessed only by contract admin
+     *
+     * @param _aliasPrice new alias price
+     */
+    function setAliasPrice(uint _aliasPrice) public onlyOwner {
+        aliasPrice = _aliasPrice;
+    }
+
+    /**
      * @dev Send partner reward to uplines
      *
      * @param referral user who made a buy
@@ -283,6 +325,17 @@ contract HoneypotGame is ERC1155Holder, Ownable {
      */
     function getPartnerRewardPercents() public view returns(uint[10] memory) {
         return partnerRewardPercents;
+    }
+
+    /**
+     * @dev Get user address by alias
+     *
+     * @param ref alias
+     *
+     * @return resolved address
+     */
+    function getAddressByAlias(string memory ref) public view returns(address) {
+        return aliasAddress[ref];
     }
 
     /**

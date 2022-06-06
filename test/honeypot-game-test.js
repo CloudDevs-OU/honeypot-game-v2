@@ -1,6 +1,5 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
-const STABLE_INITIAL_BALANCE = ethers.utils.parseEther("10000");
 const ONE_TOKEN = ethers.utils.parseEther("1");
 
 let bank;
@@ -15,7 +14,7 @@ describe("HoneypotGame", async function() {
         const signers = await ethers.getSigners();
         const addresses = signers.map(a => a.address);
         const MockStable = await ethers.getContractFactory("MockStable");
-        stable = await MockStable.deploy(addresses, STABLE_INITIAL_BALANCE);
+        stable = await MockStable.deploy(addresses, ethers.utils.parseEther("100000"));
 
         const HoneyBank = await ethers.getContractFactory("HoneyBank");
         bank = await HoneyBank.deploy(stable.address);
@@ -292,5 +291,96 @@ describe("HoneypotGame", async function() {
 
         const userAccount = await game.getUser(user.address);
         expect(userAccount.partnerLevel).eq(0);
+    })
+
+    it("should successfully buy alias", async function() {
+        const [,user] = await ethers.getSigners();
+
+        const userBefore = await game.getUser(user.address);
+        expect(userBefore.accountAliases.length).eq(0);
+
+        await game.connect(user).buyAlias("dickpick");
+
+        const userAfter = await game.getUser(user.address);
+        expect(userAfter.accountAliases.length).eq(1);
+        expect(userAfter.accountAliases[0]).eq("dickpick");
+    })
+
+    it("should successfully buy another alias", async function() {
+        const [,user] = await ethers.getSigners();
+
+        await game.connect(user).buyAlias("dickpickhunter77");
+        const userAfter = await game.getUser(user.address);
+        expect(userAfter.accountAliases.length).eq(2);
+        expect(userAfter.accountAliases[1]).eq("dickpickhunter77");
+    })
+
+    it("should return user address by alias", async function() {
+        const [,user] = await ethers.getSigners();
+
+        const addr1 = await game.getAddressByAlias("dickpick");
+        expect(addr1).eq(user.address);
+
+        const addr2 = await game.getAddressByAlias("dickpickhunter77");
+        expect(addr2).eq(user.address);
+    })
+
+    it("should successfully pay alias fee", async function() {
+        const [,user] = await ethers.getSigners();
+
+        const balanceBefore = await token.balanceOf(user.address);
+        await game.connect(user).buyAlias("dickpicklover");
+        const balanceAfter = await token.balanceOf(user.address);
+
+        const aliasPrice = await game.aliasPrice();
+        expect(balanceBefore.sub(balanceAfter)).eq(aliasPrice);
+    })
+
+    it("should fail to buy more than 10 aliases", async function() {
+        const [,,anotherUser] = await ethers.getSigners();
+
+        const aliasPrice = await game.aliasPrice();
+        await bank.connect(anotherUser).buyTokens(aliasPrice.mul(10));
+
+        await game.connect(anotherUser).buyAlias("pussy1");
+        await game.connect(anotherUser).buyAlias("pussy2");
+        await game.connect(anotherUser).buyAlias("pussy3");
+        await game.connect(anotherUser).buyAlias("pussy4");
+        await game.connect(anotherUser).buyAlias("pussy5");
+        await game.connect(anotherUser).buyAlias("pussy6");
+        await game.connect(anotherUser).buyAlias("pussy7");
+        await game.connect(anotherUser).buyAlias("pussy8");
+        await game.connect(anotherUser).buyAlias("pussy9");
+        await game.connect(anotherUser).buyAlias("pussy10");
+        await expect(game.connect(anotherUser).buyAlias("pussyloser")).revertedWith("Max 10 aliases");
+    })
+
+    it("should fail to buy alias with message 'Alias is already taken'", async function() {
+        const [,user] = await ethers.getSigners();
+        await expect(game.connect(user).buyAlias("dickpick")).revertedWith("Alias is already taken");
+    })
+
+    it("should fail to buy alias with message 'Only alphanumeric symbols'", async function() {
+        const [,user] = await ethers.getSigners();
+        await expect(game.connect(user).buyAlias("john snow")).revertedWith("Only alphanumeric symbols");
+        await expect(game.connect(user).buyAlias("john.snow")).revertedWith("Only alphanumeric symbols");
+        await expect(game.connect(user).buyAlias("john_snow")).revertedWith("Only alphanumeric symbols");
+        await expect(game.connect(user).buyAlias("johnsnow.")).revertedWith("Only alphanumeric symbols");
+        await expect(game.connect(user).buyAlias(" johnsnow")).revertedWith("Only alphanumeric symbols");
+        await expect(game.connect(user).buyAlias("!johnsnow")).revertedWith("Only alphanumeric symbols");
+    })
+
+    it("should fail to buy alias with message 'ref size must be >= 3 and <= 20'", async function() {
+        const [,user] = await ethers.getSigners();
+        await expect(game.connect(user).buyAlias("")).revertedWith("ref size must be >= 3 and <= 20");
+        await expect(game.connect(user).buyAlias("1")).revertedWith("ref size must be >= 3 and <= 20");
+        await expect(game.connect(user).buyAlias("12")).revertedWith("ref size must be >= 3 and <= 20");
+        await expect(game.connect(user).buyAlias("aa")).revertedWith("ref size must be >= 3 and <= 20");
+        await expect(game.connect(user).buyAlias("1a")).revertedWith("ref size must be >= 3 and <= 20");
+    })
+
+    it("should fail to buy alias with message 'Only registered user'", async function() {
+        const [,,,notRegisteredUser] = await ethers.getSigners();
+        await expect(game.connect(notRegisteredUser).buyAlias("alien")).revertedWith("Only registered user");
     })
 })
