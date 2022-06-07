@@ -32,7 +32,7 @@ contract HoneypotGame is ERC1155Holder, Ownable {
     uint public registrationPrice;
     uint public aliasPrice;
     uint public slotPrice;
-    uint[] beePrices;
+    uint[7] beePrices;
     uint[] salableItems;
     uint[10] partnerRewardPercents;
     mapping(uint => uint) itemPrices;
@@ -252,7 +252,7 @@ contract HoneypotGame is ERC1155Holder, Ownable {
      *
      * @param _beePrices new bee prices
      */
-    function setBeePrices(uint[] memory _beePrices) public onlyOwner {
+    function setBeePrices(uint[7] memory _beePrices) public onlyOwner {
         beePrices = _beePrices;
     }
 
@@ -341,7 +341,7 @@ contract HoneypotGame is ERC1155Holder, Ownable {
     /**
      * @dev Get bee prices
      */
-    function getBeePrices() public view returns(uint[] memory) {
+    function getBeePrices() public view returns(uint[7] memory) {
         return beePrices;
     }
 
