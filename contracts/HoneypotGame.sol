@@ -44,10 +44,10 @@ contract HoneypotGame is ERC1155Holder, Ownable {
         item = _item;
         bank = _bank;
 
-        registrationPrice = 100 ether;
-        slotPrice = 10 ether;
+        registrationPrice = 5000 ether;
+        slotPrice = 250 ether;
         aliasPrice = 10000 ether;
-        beePrices = [250 ether, 500 ether, 1000 ether, 3000 ether, 5000 ether, 10000 ether, 20000 ether];
+        beePrices = [20000 ether, 50000 ether, 75000 ether, 120000 ether, 160000 ether, 200000 ether, 250000 ether];
         partnerRewardPercents = [500, 400, 300, 200, 100, 100, 100, 100, 100, 100]; // 1 % = 100
 
         // Admin preset

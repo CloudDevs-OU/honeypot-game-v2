@@ -23,10 +23,10 @@ describe("HoneypotGame", async function() {
         token = await ERC20.attach(await bank.token());
 
         const infinityTokens = ethers.utils.parseEther("99999999999")
-        const oneHundredThousandTokens = ethers.utils.parseEther("100000")
+        const tenMillionsTokens = ethers.utils.parseEther("10000000")
         for (let i = 0; i < signers.length; i++) {
             await stable.connect(signers[i]).approve(bank.address, infinityTokens);
-            await bank.connect(signers[i]).buyTokens(oneHundredThousandTokens);
+            await bank.connect(signers[i]).buyTokens(tenMillionsTokens);
         }
 
         // BeeItem
@@ -103,6 +103,24 @@ describe("HoneypotGame", async function() {
         expect(adminAccount.partnerCount[1]).eq(1);
     })
 
+    it("should successfully buy slots", async function() {
+        const [,user] = await ethers.getSigners();
+
+        const tokenBalanceBefore = await token.balanceOf(user.address);
+        await game.connect(user).buySlotPacks(5);
+
+        // Check tokens balance diff
+        const slotPrice = await game.slotPrice();
+        const totalCost = slotPrice.mul(50);
+        const tokenBalanceAfter = await token.balanceOf(user.address);
+        expect(tokenBalanceBefore.sub(tokenBalanceAfter)).eq(totalCost);
+
+        // Check apiary slots
+        const apiary = await land.getApiary(user.address)
+        const defaultSlots = await land.DEFAULT_SLOTS();
+        expect(apiary.slots).eq(defaultSlots.add(50));
+    })
+
     it("should successfully buy bees", async function() {
         const [,user] = await ethers.getSigners();
 
@@ -141,24 +159,6 @@ describe("HoneypotGame", async function() {
 
         const adminAccountAfter = await game.getUser(admin.address);
         expect(adminAccountAfter.partnerEarnReward[0].sub(adminAccountBefore.partnerEarnReward[0])).eq(reward);
-    })
-
-    it("should successfully buy slots", async function() {
-        const [,user] = await ethers.getSigners();
-
-        const tokenBalanceBefore = await token.balanceOf(user.address);
-        await game.connect(user).buySlotPacks(5);
-
-        // Check tokens balance diff
-        const slotPrice = await game.slotPrice();
-        const totalCost = slotPrice.mul(50);
-        const tokenBalanceAfter = await token.balanceOf(user.address);
-        expect(tokenBalanceBefore.sub(tokenBalanceAfter)).eq(totalCost);
-
-        // Check apiary slots
-        const apiary = await land.getApiary(user.address)
-        const defaultSlots = await land.DEFAULT_SLOTS();
-        expect(apiary.slots).eq(defaultSlots.add(50));
     })
 
     it("should successfully add items for sale", async function() {

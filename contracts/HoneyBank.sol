@@ -27,7 +27,7 @@ contract HoneyBank is IHoneyBank, AccessControl {
     constructor(IERC20 _stable) {
         token = new HoneyToken();
         stable = _stable;
-        rate = 100; // 1 stable = 1 token / 10000 * rate => 1 token = 1 stable * 10000 / rate
+        rate = 42; // 1 stable = 1 token / 10000 * rate => 1 token = 1 stable * 10000 / rate
         swapFee = 200; // 2 %
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setRoleAdmin(BANKER_ROLE, DEFAULT_ADMIN_ROLE);

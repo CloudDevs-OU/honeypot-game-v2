@@ -24,12 +24,12 @@ contract ApiaryLand is IApiaryLand, AccessControl {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     uint constant public TOTAL_BEES = 7;
     uint constant public DEFAULT_SLOTS = 10;
-    uint[] public beeSlots = [1, 2, 4, 8, 16, 32, 64];
+    uint[] public beeSlots = [3, 7, 11, 18, 24, 29, 37];
 
     // State
     uint public moodRecoveryTime;
     uint public noneProfitTimeout;
-    uint[7] beeDailyProfits = [1.5 ether, 3.5 ether, 7.5 ether, 25 ether, 45 ether, 95 ether, 200 ether];
+    uint[7] beeDailyProfits = [53.33 ether, 150 ether, 250 ether, 440 ether, 640 ether, 866.67 ether, 1166.67 ether];
     mapping(uint => uint) itemBonusPercents;
     mapping(uint => uint) setBonusPercents;
     mapping(uint => uint) itemSet;
