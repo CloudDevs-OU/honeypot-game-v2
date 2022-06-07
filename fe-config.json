@@ -1,0 +1,299 @@
+{
+  "registrationPrice": 5000,
+  "slotPrice": 250,
+  "aliasPrice": 10000,
+  "swapRate": 42,
+  "swapFeePercents": 2,
+  "noneProfitTimeout": 86400,
+  "moodRecoveryTime": 518400,
+  "sets": [
+    {
+      "setId": 1,
+      "type": "common",
+      "name": "Common Set #1",
+      "bonusPercents": 10,
+      "items": [
+        {
+          "itemId": 1,
+          "beeId": 1,
+          "name": "Common Item #1",
+          "price": 5000,
+          "bonusPercents": 10
+        },
+        {
+          "itemId": 2,
+          "beeId": 2,
+          "name": "Common Item #2",
+          "price": 12500,
+          "bonusPercents": 10
+        },
+        {
+          "itemId": 3,
+          "beeId": 3,
+          "name": "Common Item #3",
+          "price": 18750,
+          "bonusPercents": 10
+        },
+        {
+          "itemId": 4,
+          "beeId": 4,
+          "name": "Common Item #4",
+          "price": 30000,
+          "bonusPercents": 10
+        },
+        {
+          "itemId": 5,
+          "beeId": 5,
+          "name": "Common Item #5",
+          "price": 40000,
+          "bonusPercents": 10
+        },
+        {
+          "itemId": 6,
+          "beeId": 6,
+          "name": "Common Item #6",
+          "price": 50000,
+          "bonusPercents": 10
+        },
+        {
+          "itemId": 7,
+          "beeId": 7,
+          "name": "Common Item #7",
+          "price": 62500,
+          "bonusPercents": 10
+        }
+      ]
+    },
+    {
+      "setId": 2,
+      "type": "uncommon",
+      "name": "Uncommon Set #1",
+      "bonusPercents": 20,
+      "items": [
+        {
+          "itemId": 8,
+          "beeId": 1,
+          "name": "Uncommon Item #1",
+          "price": 10000,
+          "bonusPercents": 20
+        },
+        {
+          "itemId": 9,
+          "beeId": 2,
+          "name": "Uncommon Item #2",
+          "price": 25000,
+          "bonusPercents": 20
+        },
+        {
+          "itemId": 10,
+          "beeId": 3,
+          "name": "Uncommon Item #3",
+          "price": 37500,
+          "bonusPercents": 20
+        },
+        {
+          "itemId": 11,
+          "beeId": 4,
+          "name": "Uncommon Item #4",
+          "price": 60000,
+          "bonusPercents": 20
+        },
+        {
+          "itemId": 12,
+          "beeId": 5,
+          "name": "Uncommon Item #5",
+          "price": 80000,
+          "bonusPercents": 20
+        },
+        {
+          "itemId": 13,
+          "beeId": 6,
+          "name": "Uncommon Item #6",
+          "price": 100000,
+          "bonusPercents": 20
+        },
+        {
+          "itemId": 14,
+          "beeId": 7,
+          "name": "Uncommon Item #7",
+          "price": 125000,
+          "bonusPercents": 20
+        }
+      ]
+    },
+    {
+      "setId": 3,
+      "type": "master",
+      "name": "Master Set #1",
+      "bonusPercents": 30,
+      "items": [
+        {
+          "itemId": 15,
+          "beeId": 1,
+          "name": "Master Item #1",
+          "price": 15000,
+          "bonusPercents": 30
+        },
+        {
+          "itemId": 16,
+          "beeId": 2,
+          "name": "Master Item #2",
+          "price": 37500,
+          "bonusPercents": 30
+        },
+        {
+          "itemId": 17,
+          "beeId": 3,
+          "name": "Master Item #3",
+          "price": 56250,
+          "bonusPercents": 30
+        },
+        {
+          "itemId": 18,
+          "beeId": 4,
+          "name": "Master Item #4",
+          "price": 90000,
+          "bonusPercents": 30
+        },
+        {
+          "itemId": 19,
+          "beeId": 5,
+          "name": "Master Item #5",
+          "price": 120000,
+          "bonusPercents": 30
+        },
+        {
+          "itemId": 20,
+          "beeId": 6,
+          "name": "Master Item #6",
+          "price": 150000,
+          "bonusPercents": 30
+        },
+        {
+          "itemId": 21,
+          "beeId": 7,
+          "name": "Master Item #7",
+          "price": 187500,
+          "bonusPercents": 30
+        }
+      ]
+    },
+    {
+      "setId": 4,
+      "type": "epic",
+      "name": "Epic Set #1",
+      "bonusPercents": 40,
+      "items": [
+        {
+          "itemId": 15,
+          "beeId": 1,
+          "name": "Epic Item #1",
+          "price": 20000,
+          "bonusPercents": 40
+        },
+        {
+          "itemId": 16,
+          "beeId": 2,
+          "name": "Epic Item #2",
+          "price": 50000,
+          "bonusPercents": 40
+        },
+        {
+          "itemId": 17,
+          "beeId": 3,
+          "name": "Epic Item #3",
+          "price": 75000,
+          "bonusPercents": 40
+        },
+        {
+          "itemId": 18,
+          "beeId": 4,
+          "name": "Epic Item #4",
+          "price": 120000,
+          "bonusPercents": 40
+        },
+        {
+          "itemId": 19,
+          "beeId": 5,
+          "name": "Epic Item #5",
+          "price": 160000,
+          "bonusPercents": 40
+        },
+        {
+          "itemId": 20,
+          "beeId": 6,
+          "name": "Epic Item #6",
+          "price": 200000,
+          "bonusPercents": 40
+        },
+        {
+          "itemId": 21,
+          "beeId": 7,
+          "name": "Epic Item #7",
+          "price": 250000,
+          "bonusPercents": 40
+        }
+      ]
+    }
+  ],
+  "salableSets": [1, 2, 3, 4],
+  "bees": [
+    {
+      "id": 1,
+      "name": "Buzzer",
+      "price": 20000,
+      "slots": 3,
+      "baseDailyProfit": 54,
+      "maxDailyProfit": 214
+    },
+    {
+      "id": 2,
+      "name": "Maya",
+      "price": 50000,
+      "slots": 7,
+      "baseDailyProfit": 150,
+      "maxDailyProfit": 600
+    },
+    {
+      "id": 3,
+      "name": "Nimble",
+      "price": 75000,
+      "slots": 11,
+      "baseDailyProfit": 250,
+      "maxDailyProfit": 1000
+    },
+    {
+      "id": 4,
+      "name": "Flicky",
+      "price": 120000,
+      "slots": 18,
+      "baseDailyProfit": 440,
+      "maxDailyProfit": 1760
+    },
+    {
+      "id": 5,
+      "name": "Sweet Joe",
+      "price": 160000,
+      "slots": 24,
+      "baseDailyProfit": 640,
+      "maxDailyProfit": 2560
+    },
+    {
+      "id": 6,
+      "name": "Honey Master",
+      "price": 200000,
+      "slots": 29,
+      "baseDailyProfit": 867,
+      "maxDailyProfit": 3467
+    },
+    {
+      "id": 7,
+      "name": "God Of Honey",
+      "price": 250000,
+      "slots": 37,
+      "baseDailyProfit": 1167,
+      "maxDailyProfit": 4667
+    }
+  ],
+  "partnerRewardPercents": [5, 4, 3, 2, 2, 1, 1, 1, 1, 1]
+}
