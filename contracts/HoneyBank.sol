@@ -95,7 +95,7 @@ contract HoneyBank is IHoneyBank, AccessControl {
     }
 
     /**
-     * @dev Update swap rate (1 stable = tokens / rate)
+     * @dev Update swap rate (stable = tokens / rate)
      * @notice Can be accessed only by contract admin
      *
      * @param newRate new rate that must be used for swap calc
