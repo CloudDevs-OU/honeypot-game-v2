@@ -117,7 +117,7 @@ contract HoneyBank is IHoneyBank, AccessControl {
     }
 
     /**
- * @dev Get tokens balance of account
+     * @dev Get tokens balance of account
      * @notice Can be accessed only by contract admin
      *
      * @param account balance owner
