@@ -21,10 +21,10 @@ contract HoneyBank is IHoneyBank, AccessControl {
     bytes32 public constant BANKER_ROLE = keccak256("BANKER_ROLE");
 
     // Events
-    event BuyTokens(address userAddress, uint tokensAmount, uint stableAmount, uint rate, uint fee);
-    event SellTokens(address userAddress, uint tokensAmount, uint stableAmount, uint rate, uint fee);
-    event RateUpdate(uint oldRate, uint newRate);
-    event SwapFeeUpdate(uint oldSwapFee, uint newSwapFee);
+    event BuyTokens(address account, uint tokensAmount, uint stableAmount, uint rate, uint fee);
+    event SellTokens(address account, uint tokensAmount, uint stableAmount, uint rate, uint fee);
+    event RateUpdate(uint newRate);
+    event SwapFeeUpdate(uint newSwapFee);
 
     constructor(IERC20 _stable) {
         token = new HoneyToken();
@@ -103,8 +103,8 @@ contract HoneyBank is IHoneyBank, AccessControl {
      * @param newRate new rate that must be used for swap calc
      */
     function setRate(uint newRate) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        emit RateUpdate(rate, newRate);
         rate = newRate;
+        emit RateUpdate(newRate);
     }
 
     /**
@@ -114,8 +114,8 @@ contract HoneyBank is IHoneyBank, AccessControl {
      * @param newSwapFee new swap fee that must be applied to all swaps
      */
     function setSwapFee(uint newSwapFee) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        emit SwapFeeUpdate(swapFee, newSwapFee);
         swapFee = newSwapFee;
+        emit SwapFeeUpdate(newSwapFee);
     }
 
     /**

@@ -24,6 +24,17 @@ contract HoneypotGame is ERC1155Holder, Ownable {
     // Constants
     uint constant public REWARDABLE_LINES = 10;
 
+    // Events
+    event UserRegistration(address account, address upline);
+    event BuyBees(address account, uint[] beeIds, uint[] amounts);
+    event BuyItems(address account, uint[] itemIds, uint[] amounts);
+    event BuySlotPacks(address account, uint packs);
+    event BuyAlias(address account, string ref);
+    event PartnerLevelUpdate(address account, uint oldLevel, uint newLevel);
+    event ClaimProfit(address account, uint profit);
+    event PartnerReward(address account, address referral, uint line, uint reward);
+    event MissedPartnerReward(address account, address referral, uint line, uint reward);
+
     // State
     IApiaryLand public land;
     IBeeItem public item;
@@ -82,6 +93,8 @@ contract HoneypotGame is ERC1155Holder, Ownable {
 
         // Create apiary
         land.createApiary(msg.sender);
+
+        emit UserRegistration(msg.sender, upline);
     }
 
     /**
@@ -102,6 +115,8 @@ contract HoneypotGame is ERC1155Holder, Ownable {
         bank.subtract(msg.sender, totalCost);
         land.addBees(msg.sender, beeIds, amounts);
         sendPartnerReward(msg.sender, totalCost);
+
+        emit BuyBees(msg.sender, beeIds, amounts);
     }
 
     /**
@@ -125,6 +140,8 @@ contract HoneypotGame is ERC1155Holder, Ownable {
         bank.subtract(msg.sender, totalCost);
         item.mintBatch(msg.sender, itemIds, amounts);
         sendPartnerReward(msg.sender, totalCost);
+
+        emit BuyItems(msg.sender, itemIds, amounts);
     }
 
     /**
@@ -140,6 +157,8 @@ contract HoneypotGame is ERC1155Holder, Ownable {
         uint totalCost = packs * 10 * slotPrice;
         bank.subtract(msg.sender, totalCost);
         land.addSlots(msg.sender, packs * 10);
+
+        emit BuySlotPacks(msg.sender, packs);
     }
 
     /**
@@ -173,6 +192,8 @@ contract HoneypotGame is ERC1155Holder, Ownable {
         uint profit = land.claimProfit(msg.sender);
         require(profit > 0, "Can't claim 0 profit");
         bank.add(msg.sender, profit);
+
+        emit ClaimProfit(msg.sender, profit);
     }
 
     /**
@@ -200,6 +221,8 @@ contract HoneypotGame is ERC1155Holder, Ownable {
         aliasAddress[ref] = msg.sender;
         users[msg.sender].accountAliases.push(ref);
         bank.subtract(msg.sender, aliasPrice);
+
+        emit BuyAlias(msg.sender, ref);
     }
 
     /**
@@ -291,8 +314,10 @@ contract HoneypotGame is ERC1155Holder, Ownable {
             if(users[upline[i]].partnerLevel > i) {
                 users[upline[i]].partnerEarnReward[i] += reward;
                 bank.add(users[upline[i]].account, reward);
+                emit PartnerReward(users[upline[i]].account, referral, i + 1, reward);
             } else {
                 users[upline[i]].partnerMissedReward[i] += reward;
+                emit MissedPartnerReward(users[upline[i]].account, referral, i + 1, reward);
             }
         }
     }
@@ -317,7 +342,10 @@ contract HoneypotGame is ERC1155Holder, Ownable {
             level = REWARDABLE_LINES;
         }
 
-        users[msg.sender].partnerLevel = level;
+        if (users[msg.sender].partnerLevel != level) {
+            emit PartnerLevelUpdate(msg.sender, users[msg.sender].partnerLevel, level);
+            users[msg.sender].partnerLevel = level;
+        }
     }
 
     /**
