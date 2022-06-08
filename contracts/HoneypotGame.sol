@@ -66,12 +66,6 @@ contract HoneypotGame is ERC1155Holder, Ownable {
         require(upline != address(0), 'Upline can not be zero');
         require(isRegistered(upline), "Upline is not registered");
 
-        // Take registration fee
-        bank.subtract(msg.sender, registrationPrice);
-
-        // Create apiary
-        land.createApiary(msg.sender);
-
         // Register user
         users[msg.sender].account = msg.sender;
         users[msg.sender].upline = upline;
@@ -82,6 +76,12 @@ contract HoneypotGame is ERC1155Holder, Ownable {
         for(uint line; line < uplines.length && uplines[line] != address(0); line++) {
             users[uplines[line]].partnerCount[line]++;
         }
+
+        // Take registration fee
+        bank.subtract(msg.sender, registrationPrice);
+
+        // Create apiary
+        land.createApiary(msg.sender);
     }
 
     /**

@@ -16,6 +16,8 @@ contract HoneyBank is IHoneyBank, AccessControl {
 
     // Constants
     uint public constant MIN_SWAP_TOKENS_AMOUNT = 100 ether;
+    uint public constant FEE_DIVISOR = 10000;
+    uint public constant RATE_DIVISOR = 10000;
     bytes32 public constant BANKER_ROLE = keccak256("BANKER_ROLE");
 
     // Events
@@ -41,8 +43,8 @@ contract HoneyBank is IHoneyBank, AccessControl {
     function buyTokens(uint tokensAmount) external {
         require(tokensAmount >= MIN_SWAP_TOKENS_AMOUNT, "Buy tokens amount too small");
 
-        uint stableAmount = tokensAmount * rate / 10000;
-        uint stableFee = stableAmount * swapFee / 10000;
+        uint stableAmount = tokensAmount * rate / RATE_DIVISOR;
+        uint stableFee = stableAmount * swapFee / FEE_DIVISOR;
         uint stableAmountWithFee = stableAmount + stableFee;
         uint stableAllowance = stable.allowance(msg.sender, address(this));
         require(stableAllowance >= stableAmountWithFee, "Allowance is not enough");
@@ -64,8 +66,8 @@ contract HoneyBank is IHoneyBank, AccessControl {
 
         token.burnTokens(msg.sender, tokensAmount);
 
-        uint tokensFee = tokensAmount * swapFee / 10000 ;
-        uint stableAmount = (tokensAmount - tokensFee) * rate / 10000;
+        uint tokensFee = tokensAmount * swapFee / FEE_DIVISOR ;
+        uint stableAmount = (tokensAmount - tokensFee) * rate / RATE_DIVISOR;
         stable.transfer(msg.sender, stableAmount);
 
         emit SellTokens(msg.sender, tokensAmount, stableAmount, rate, tokensFee);
