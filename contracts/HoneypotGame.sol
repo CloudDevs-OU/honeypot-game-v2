@@ -61,7 +61,7 @@ contract HoneypotGame is ERC1155Holder, Ownable {
      *
      * @param upline account that invite msg.sender
      */
-    function register(address upline) public {
+    function register(address upline) external {
         require(!isRegistered(msg.sender), "User is already registered");
         require(upline != address(0), 'Upline can not be zero');
         require(isRegistered(upline), "Upline is not registered");
@@ -92,7 +92,7 @@ contract HoneypotGame is ERC1155Holder, Ownable {
      * @param beeIds array of bee ids to buy
      * @param amounts array that correspond to bee amounts from beeIds
      */
-    function buyBees(uint[] memory beeIds, uint[] memory amounts) public {
+    function buyBees(uint[] memory beeIds, uint[] memory amounts) external {
         uint totalCost;
         for(uint i; i < beeIds.length; i++) {
             totalCost += beePrices[beeIds[i] - 1] * amounts[i];
@@ -110,7 +110,7 @@ contract HoneypotGame is ERC1155Holder, Ownable {
      * @param itemIds array of item ids
      * @param amounts array of amount of items corresponding to itemIds
      */
-    function buyItems(uint[] memory itemIds, uint[] memory amounts) public {
+    function buyItems(uint[] memory itemIds, uint[] memory amounts) external {
         require(itemIds.length == amounts.length, "itemIds.length must be equal to amounts.length");
         require(itemIds.length > 0, "packs must be > 0");
 
@@ -134,7 +134,7 @@ contract HoneypotGame is ERC1155Holder, Ownable {
      *
      * @param packs 1 pack = 10 slots
      */
-    function buySlotPacks(uint packs) public {
+    function buySlotPacks(uint packs) external {
         require(packs > 0, "packs must be > 0");
 
         uint totalCost = packs * 10 * slotPrice;
@@ -150,7 +150,7 @@ contract HoneypotGame is ERC1155Holder, Ownable {
      *
      * @param itemIds array of item ids that must be set. Each item must be appropriate for beeId (item index + 1)
      */
-    function setApiaryItems(uint[7] memory itemIds) public {
+    function setApiaryItems(uint[7] memory itemIds) external {
         (uint[7] memory notUsedItems, uint[7] memory newItems) = land.setApiaryItems(msg.sender, itemIds);
         for(uint i; i < notUsedItems.length; i++) {
             if (notUsedItems[i] != 0) {
@@ -169,7 +169,7 @@ contract HoneypotGame is ERC1155Holder, Ownable {
      * @notice msg.sender must be registered
      *
      */
-    function claimProfit() public {
+    function claimProfit() external {
         uint profit = land.claimProfit(msg.sender);
         require(profit > 0, "Can't claim 0 profit");
         bank.add(msg.sender, profit);
@@ -183,7 +183,7 @@ contract HoneypotGame is ERC1155Holder, Ownable {
      * @notice msg.sender must be registered
      *
      */
-    function buyAlias(string memory ref) public {
+    function buyAlias(string memory ref) external {
         require(users[msg.sender].account == msg.sender, "Only registered user");
         require(users[msg.sender].accountAliases.length < 10, "Max 10 aliases");
         bytes memory refBytes = bytes(ref);
@@ -210,7 +210,7 @@ contract HoneypotGame is ERC1155Holder, Ownable {
      * @param itemIds array of item ids to publish for sale
      * @param prices array of itemIds prices
      */
-    function addItemsForSale(uint[] memory itemIds, uint[] memory prices) public onlyOwner {
+    function addItemsForSale(uint[] memory itemIds, uint[] memory prices) external onlyOwner {
         require(itemIds.length == prices.length, "itemIds.length must be equal to prices.length");
         require(itemIds.length > 0, "itemIds.length must be > 0");
         for(uint i; i < itemIds.length; i++) {
@@ -230,7 +230,7 @@ contract HoneypotGame is ERC1155Holder, Ownable {
      *
      * @param _registrationPrice new registration price
      */
-    function setRegistrationPrice(uint _registrationPrice) public onlyOwner {
+    function setRegistrationPrice(uint _registrationPrice) external onlyOwner {
         registrationPrice = _registrationPrice;
     }
 
@@ -241,7 +241,7 @@ contract HoneypotGame is ERC1155Holder, Ownable {
      *
      * @param _slotPrice new slot price
      */
-    function setSlotPrice(uint _slotPrice) public onlyOwner {
+    function setSlotPrice(uint _slotPrice) external onlyOwner {
         slotPrice = _slotPrice;
     }
 
@@ -252,7 +252,7 @@ contract HoneypotGame is ERC1155Holder, Ownable {
      *
      * @param _beePrices new bee prices
      */
-    function setBeePrices(uint[7] memory _beePrices) public onlyOwner {
+    function setBeePrices(uint[7] memory _beePrices) external onlyOwner {
         beePrices = _beePrices;
     }
 
@@ -263,7 +263,7 @@ contract HoneypotGame is ERC1155Holder, Ownable {
      *
      * @param _partnerRewardPercents new partner reward percents
      */
-    function setPartnerRewardPercents(uint[10] memory _partnerRewardPercents) public onlyOwner {
+    function setPartnerRewardPercents(uint[10] memory _partnerRewardPercents) external onlyOwner {
         partnerRewardPercents = _partnerRewardPercents;
     }
 
@@ -274,7 +274,7 @@ contract HoneypotGame is ERC1155Holder, Ownable {
      *
      * @param _aliasPrice new alias price
      */
-    function setAliasPrice(uint _aliasPrice) public onlyOwner {
+    function setAliasPrice(uint _aliasPrice) external onlyOwner {
         aliasPrice = _aliasPrice;
     }
 
@@ -323,7 +323,7 @@ contract HoneypotGame is ERC1155Holder, Ownable {
     /**
      * @dev Get partner reward percents
      */
-    function getPartnerRewardPercents() public view returns(uint[10] memory) {
+    function getPartnerRewardPercents() external view returns(uint[10] memory) {
         return partnerRewardPercents;
     }
 
@@ -334,28 +334,28 @@ contract HoneypotGame is ERC1155Holder, Ownable {
      *
      * @return resolved address
      */
-    function getAddressByAlias(string memory ref) public view returns(address) {
+    function getAddressByAlias(string memory ref) external view returns(address) {
         return aliasAddress[ref];
     }
 
     /**
      * @dev Get bee prices
      */
-    function getBeePrices() public view returns(uint[7] memory) {
+    function getBeePrices() external view returns(uint[7] memory) {
         return beePrices;
     }
 
     /**
      * @dev Get PartnerAccount
      */
-    function getUser(address account) public view returns(User memory) {
+    function getUser(address account) external view returns(User memory) {
         return users[account];
     }
 
     /**
      * @dev Get salable items with prices
      */
-    function getSalableItems() public view returns(uint[] memory, uint[] memory) {
+    function getSalableItems() external view returns(uint[] memory, uint[] memory) {
         uint[] memory prices = new uint[](salableItems.length);
         for(uint i; i < salableItems.length; i++) {
             prices[i] = itemPrices[salableItems[i]];

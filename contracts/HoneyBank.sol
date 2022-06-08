@@ -38,7 +38,7 @@ contract HoneyBank is IHoneyBank, AccessControl {
      *
      * @param tokensAmount tokens amount that will be added to balance
      */
-    function buyTokens(uint tokensAmount) public {
+    function buyTokens(uint tokensAmount) external {
         require(tokensAmount >= MIN_SWAP_TOKENS_AMOUNT, "Buy tokens amount too small");
 
         uint stableAmount = tokensAmount * rate / 10000;
@@ -58,7 +58,7 @@ contract HoneyBank is IHoneyBank, AccessControl {
      *
      * @param tokensAmount tokens amount that will be subtracted from balance
      */
-    function sellTokens(uint tokensAmount) public {
+    function sellTokens(uint tokensAmount) external {
         require(tokensAmount >= MIN_SWAP_TOKENS_AMOUNT, "Sell tokens amount is too small");
         require(token.balanceOf(msg.sender) >= tokensAmount, "Not enough tokens on balance");
 
@@ -78,7 +78,7 @@ contract HoneyBank is IHoneyBank, AccessControl {
      * @param to account for getting tokens
      * @param amount tokens amount that will be credited
      */
-    function add(address to, uint amount) public onlyRole(BANKER_ROLE) {
+    function add(address to, uint amount) external onlyRole(BANKER_ROLE) {
         token.mintTokens(to, amount);
     }
 
@@ -89,7 +89,7 @@ contract HoneyBank is IHoneyBank, AccessControl {
      * @param from account from burn tokens
      * @param amount tokens amount that needs to be debited
      */
-    function subtract(address from, uint amount) public onlyRole(BANKER_ROLE) {
+    function subtract(address from, uint amount) external onlyRole(BANKER_ROLE) {
         require(token.balanceOf(from) >= amount, "Not enough tokens");
         token.burnTokens(from, amount);
     }
@@ -100,7 +100,7 @@ contract HoneyBank is IHoneyBank, AccessControl {
      *
      * @param newRate new rate that must be used for swap calc
      */
-    function setRate(uint newRate) public onlyRole(DEFAULT_ADMIN_ROLE) {
+    function setRate(uint newRate) external onlyRole(DEFAULT_ADMIN_ROLE) {
         emit RateUpdate(rate, newRate);
         rate = newRate;
     }
@@ -111,7 +111,7 @@ contract HoneyBank is IHoneyBank, AccessControl {
      *
      * @param newSwapFee new swap fee that must be applied to all swaps
      */
-    function setSwapFee(uint newSwapFee) public onlyRole(DEFAULT_ADMIN_ROLE) {
+    function setSwapFee(uint newSwapFee) external onlyRole(DEFAULT_ADMIN_ROLE) {
         emit SwapFeeUpdate(swapFee, newSwapFee);
         swapFee = newSwapFee;
     }
@@ -122,7 +122,7 @@ contract HoneyBank is IHoneyBank, AccessControl {
      *
      * @param account balance owner
      */
-    function balanceOf(address account) public view returns(uint) {
+    function balanceOf(address account) external view returns(uint) {
         return token.balanceOf(account);
     }
 }

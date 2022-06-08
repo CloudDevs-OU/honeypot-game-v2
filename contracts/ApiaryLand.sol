@@ -63,7 +63,7 @@ contract ApiaryLand is IApiaryLand, AccessControl {
      *
      * @param account New apiary owner
      */
-    function createApiary(address account) public onlyRole(OPERATOR_ROLE) {
+    function createApiary(address account) external onlyRole(OPERATOR_ROLE) {
         require(apiary[account].owner == address(0), "Apiary is already created");
         apiary[account].owner = account;
         apiary[account].slots = DEFAULT_SLOTS;
@@ -78,7 +78,7 @@ contract ApiaryLand is IApiaryLand, AccessControl {
      * @param beeIds array of bee ids
      * @param amounts array of bee amounts corresponding to beeIds
      */
-    function addBees(address owner, uint[] memory beeIds, uint[] memory amounts) public operatorOrMinter hasApiary(owner) {
+    function addBees(address owner, uint[] memory beeIds, uint[] memory amounts) external operatorOrMinter hasApiary(owner) {
         require(beeIds.length == amounts.length, "'beeIds' length not equal to 'amounts' length");
         require(beeIds.length > 0, "'beeIds' length must be > 0");
         beforeApiaryStateChanged(owner);
@@ -96,7 +96,7 @@ contract ApiaryLand is IApiaryLand, AccessControl {
      * @param owner Apiary owner
      * @param amount slots amount that needs to be added
      */
-    function addSlots(address owner, uint amount) public operatorOrMinter hasApiary(owner) {
+    function addSlots(address owner, uint amount) external operatorOrMinter hasApiary(owner) {
         apiary[owner].slots += amount;
     }
 
@@ -108,7 +108,7 @@ contract ApiaryLand is IApiaryLand, AccessControl {
      * @param itemIds array of item ids
      * @return (notUsedItems, newItems) notUsedItems - items that no longer in use, newItems - items that will be used (corresponding to beeIds)
      */
-    function setApiaryItems(address owner, uint[7] memory itemIds) public onlyRole(OPERATOR_ROLE) hasApiary(owner) returns(uint[7] memory, uint[7] memory) {
+    function setApiaryItems(address owner, uint[7] memory itemIds) external onlyRole(OPERATOR_ROLE) hasApiary(owner) returns(uint[7] memory, uint[7] memory) {
         beforeApiaryStateChanged(owner);
         uint[7] memory newItems;
         uint[7] memory notUsedItems;
@@ -133,7 +133,7 @@ contract ApiaryLand is IApiaryLand, AccessControl {
      *
      * @param _moodRecoveryTime New mood recovery time
      */
-    function setMoodRecoveryTime(uint _moodRecoveryTime) public onlyRole(DEFAULT_ADMIN_ROLE) {
+    function setMoodRecoveryTime(uint _moodRecoveryTime) external onlyRole(DEFAULT_ADMIN_ROLE) {
         moodRecoveryTime = _moodRecoveryTime;
     }
 
@@ -143,7 +143,7 @@ contract ApiaryLand is IApiaryLand, AccessControl {
      *
      * @param _noneProfitTimeout New none profit timeout
      */
-    function setNoneProfitTimeout(uint _noneProfitTimeout) public onlyRole(DEFAULT_ADMIN_ROLE) {
+    function setNoneProfitTimeout(uint _noneProfitTimeout) external onlyRole(DEFAULT_ADMIN_ROLE) {
         noneProfitTimeout = _noneProfitTimeout;
     }
 
@@ -153,7 +153,7 @@ contract ApiaryLand is IApiaryLand, AccessControl {
      *
      * @param _beeDailyProfits New bee daily profits
      */
-    function setBeeDailyProfits(uint[7] memory _beeDailyProfits) public onlyRole(DEFAULT_ADMIN_ROLE) {
+    function setBeeDailyProfits(uint[7] memory _beeDailyProfits) external onlyRole(DEFAULT_ADMIN_ROLE) {
         beeDailyProfits = _beeDailyProfits;
     }
 
@@ -173,7 +173,7 @@ contract ApiaryLand is IApiaryLand, AccessControl {
         uint setBonusPercentage,
         uint[7] memory itemIds,
         uint[7] memory itemBonusPercentage
-    ) public onlyRole(DEFAULT_ADMIN_ROLE) {
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
         setItems[setId] = itemIds;
         setBonusPercents[setId] = setBonusPercentage;
         for(uint i; i < itemIds.length; i++) {
@@ -184,27 +184,13 @@ contract ApiaryLand is IApiaryLand, AccessControl {
     }
 
     /**
-     * @dev Get set info
-     *
-     * @param setId Set identifier
-     * @return (setId, setBonusPercents, setItemsIds, setItemBonusPercents);
-     */
-    function getSet(uint setId) public view returns(uint, uint, uint[7] memory, uint[7] memory) {
-        uint[7] memory setItemBonusPercents;
-        for(uint i; i < TOTAL_BEES; i++) {
-            setItemBonusPercents[i] = itemBonusPercents[setItems[setId][i]];
-        }
-        return (setId, setBonusPercents[setId], setItems[setId], setItemBonusPercents);
-    }
-
-    /**
      * @dev Add profit to owner's totalClaimedProfit and reset deferred payouts
      * @notice Can be accessed only by contract admin
      *
      * @param owner Apiary owner
      * @return claimed profit
      */
-    function claimProfit(address owner) public onlyRole(OPERATOR_ROLE) hasApiary(owner) returns(uint) {
+    function claimProfit(address owner) external onlyRole(OPERATOR_ROLE) hasApiary(owner) returns(uint) {
         uint profit = calcAvailableProfitForClaiming(owner, apiary[owner].bees, apiary[owner].items);
         apiary[owner].totalClaimedProfit += profit;
         apiary[owner].workStartTime = block.timestamp + noneProfitTimeout;
@@ -238,12 +224,26 @@ contract ApiaryLand is IApiaryLand, AccessControl {
     }
 
     /**
+     * @dev Get set info
+     *
+     * @param setId Set identifier
+     * @return (setId, setBonusPercents, setItemsIds, setItemBonusPercents);
+     */
+    function getSet(uint setId) external view returns(uint, uint, uint[7] memory, uint[7] memory) {
+        uint[7] memory setItemBonusPercents;
+        for(uint i; i < TOTAL_BEES; i++) {
+            setItemBonusPercents[i] = itemBonusPercents[setItems[setId][i]];
+        }
+        return (setId, setBonusPercents[setId], setItems[setId], setItemBonusPercents);
+    }
+
+    /**
      * @dev Get owner's bees and items
      *
      * @param owner Apiary owner
      * @return (bees, items, isSet)
      */
-    function getBeesAndItems(address owner) public view returns(uint[7] memory, uint[7] memory, bool) {
+    function getBeesAndItems(address owner) external view returns(uint[7] memory, uint[7] memory, bool) {
         return (apiary[owner].bees, apiary[owner].items, getSetId(apiary[owner].items) > 0);
     }
 
@@ -269,7 +269,7 @@ contract ApiaryLand is IApiaryLand, AccessControl {
      * @param owner Apiary owner
      * @return owner's Apiary
      */
-    function getApiary(address owner) public view returns(Apiary memory) {
+    function getApiary(address owner) external view returns(Apiary memory) {
         return apiary[owner];
     }
 
@@ -293,7 +293,7 @@ contract ApiaryLand is IApiaryLand, AccessControl {
      *
      * @return array of slot amounts (index = beeId - 1, value = needed slots)
      */
-    function getBeeSlots() public view returns(uint[] memory) {
+    function getBeeSlots() external view returns(uint[] memory) {
         return beeSlots;
     }
 
@@ -301,7 +301,7 @@ contract ApiaryLand is IApiaryLand, AccessControl {
      * @dev Get bee daily profits
      * @return array of bee daily profits (index = beeId - 1)
      */
-    function getBeeDailyProfits() public view returns(uint[7] memory) {
+    function getBeeDailyProfits() external view returns(uint[7] memory) {
         return beeDailyProfits;
     }
 
@@ -336,7 +336,7 @@ contract ApiaryLand is IApiaryLand, AccessControl {
      * @param itemIds array of item ids
      * @return array of item bonus percents corresponding to itemIds (10000 = 100%)
      */
-    function getItemBonusPercents(uint[] memory itemIds) public view returns(uint[] memory) {
+    function getItemBonusPercents(uint[] memory itemIds) external view returns(uint[] memory) {
         uint[] memory result = new uint[](itemIds.length);
         for(uint i; i < itemIds.length; i++) {
             result[i] = itemBonusPercents[itemIds[i]];
@@ -351,7 +351,7 @@ contract ApiaryLand is IApiaryLand, AccessControl {
      * @param setIds array of set ids
      * @return array of item bonus percents corresponding to setIds (10000 = 100%)
      */
-    function getSetBonusPercents(uint[] memory setIds) public view returns(uint[] memory) {
+    function getSetBonusPercents(uint[] memory setIds) external view returns(uint[] memory) {
         uint[] memory result = new uint[](setIds.length);
         for(uint i; i < setIds.length; i++) {
             result[i] = setBonusPercents[setIds[i]];

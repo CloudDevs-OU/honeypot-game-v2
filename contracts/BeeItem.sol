@@ -42,7 +42,7 @@ contract BeeItem is IBeeItem, ERC1155, AccessControl {
      * @param id token identifier
      * @param amount tokens amount that will be added to balance
      */
-    function mint(address to, uint id, uint amount) public operatorOrMinter {
+    function mint(address to, uint id, uint amount) external operatorOrMinter {
         _mint(to, id, amount, "");
     }
 
@@ -53,7 +53,7 @@ contract BeeItem is IBeeItem, ERC1155, AccessControl {
      * @param ids  array of token identifiers
      * @param amounts array of tokens amount that will be added to balance
      */
-    function mintBatch(address to, uint[] memory ids, uint[] memory amounts) public operatorOrMinter {
+    function mintBatch(address to, uint[] memory ids, uint[] memory amounts) external operatorOrMinter {
         _mintBatch(to, ids, amounts, "");
     }
 
