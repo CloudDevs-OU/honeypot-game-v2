@@ -27,5 +27,8 @@ module.exports = {
             gasPrice: 20000000000,
             accounts: {mnemonic: mnemonic}
         }
+    },
+    mocha: {
+        timeout: 100000000
     }
 };
