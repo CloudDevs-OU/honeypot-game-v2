@@ -49,6 +49,7 @@ contract HoneypotGame is ERC1155Holder, Ownable {
     mapping(uint => uint) itemPrices;
     mapping(address => User) users;
     mapping(string => address) aliasAddress;
+    uint public totalUsers;
 
     constructor(IApiaryLand _land, IBeeItem _item, IHoneyBank _bank) {
         land = _land;
@@ -65,6 +66,7 @@ contract HoneypotGame is ERC1155Holder, Ownable {
         users[msg.sender].account = msg.sender;
         users[msg.sender].registrationTimestamp = block.timestamp;
         users[msg.sender].partnerLevel = REWARDABLE_LINES;
+        totalUsers++;
     }
 
     /**
@@ -94,6 +96,7 @@ contract HoneypotGame is ERC1155Holder, Ownable {
         // Create apiary
         land.createApiary(msg.sender);
 
+        totalUsers++;
         emit UserRegistration(msg.sender, upline);
     }
 
