@@ -5,6 +5,10 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "./interface/IApiaryLand.sol";
 
+/**
+* @title Holds info and manipulation methods for all apiaries
+* @author Rustam Mamedov
+*/
 contract ApiaryLand is IApiaryLand, AccessControl {
     // Structs
     struct Apiary {

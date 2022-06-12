@@ -9,6 +9,10 @@ import "./interface/IBeeItem.sol";
 import "./interface/IApiaryLand.sol";
 import "hardhat/console.sol";
 
+/**
+* @title Box with prizes (slots, tokens, bees, NFTs)
+* @author Rustam Mamedov
+*/
 contract HoneyBox is Ownable {
     // Structs and enums
     enum PrizeType {SLOTS, TOKENS, BEE, NFT}

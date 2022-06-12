@@ -7,6 +7,10 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./HoneyToken.sol";
 import "./interface/IHoneyBank.sol";
 
+/**
+* @title Central bank for account balance management and token swaps
+* @author Rustam Mamedov
+*/
 contract HoneyBank is IHoneyBank, AccessControl {
     // State variables
     HoneyToken public token;

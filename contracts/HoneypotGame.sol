@@ -9,6 +9,10 @@ import "./interface/IBeeItem.sol";
 import "./interface/IHoneyBank.sol";
 import "./interface/IHoneypotGame.sol";
 
+/**
+* @title Main contract for apiary creation and interaction
+* @author Rustam Mamedov
+*/
 contract HoneypotGame is IHoneypotGame, ERC1155Holder, Ownable {
     // Structs
     struct User {

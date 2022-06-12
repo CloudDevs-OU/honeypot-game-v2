@@ -6,6 +6,10 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "./interface/IBeeItem.sol";
 
+/**
+* @title ERC1155 tokens that represents game items
+* @author Rustam Mamedov
+*/
 contract BeeItem is IBeeItem, ERC1155, AccessControl {
     // Constants
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
