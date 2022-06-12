@@ -7,8 +7,9 @@ import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 import "./interface/IApiaryLand.sol";
 import "./interface/IBeeItem.sol";
 import "./interface/IHoneyBank.sol";
+import "./interface/IHoneypotGame.sol";
 
-contract HoneypotGame is ERC1155Holder, Ownable {
+contract HoneypotGame is IHoneypotGame, ERC1155Holder, Ownable {
     // Structs
     struct User {
         address account;
@@ -422,5 +423,15 @@ contract HoneypotGame is ERC1155Holder, Ownable {
      */
     function isRegistered(address account) public view returns(bool) {
         return account != address(0) && users[account].account == account;
+    }
+
+    /**
+     * @dev Get registration timestamp
+     *
+     * @param account user address
+     * @return 0 - if not registered, any other value is registration timestamp
+     */
+    function getRegistrationTimestamp(address account) external view returns(uint) {
+        return users[account].registrationTimestamp;
     }
 }

@@ -52,6 +52,12 @@ contract ApiaryLand is IApiaryLand, AccessControl {
         moodRecoveryTime = 6 days;
         noneProfitTimeout = 1 days;
 
+        // Create admin apiary
+        apiary[msg.sender].owner = msg.sender;
+        apiary[msg.sender].slots = DEFAULT_SLOTS;
+        apiary[msg.sender].workStartTime = block.timestamp;
+
+        // Setup roles
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setRoleAdmin(OPERATOR_ROLE, DEFAULT_ADMIN_ROLE);
         _setRoleAdmin(MINTER_ROLE, DEFAULT_ADMIN_ROLE);
