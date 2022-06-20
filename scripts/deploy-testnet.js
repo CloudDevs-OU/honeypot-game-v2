@@ -74,7 +74,8 @@ async function main() {
         MockStableCoin: stable.address,
         HoneypotToken: token.address,
         ApiaryLand: land.address,
-        HoneypotGame: game.address
+        HoneypotGame: game.address,
+        HoneyBank: bank.address
     };
     await run("Save results to contract-addresses.json", async() => {
         fs.writeFileSync("./contract-addresses.json", JSON.stringify(contractAddresses, null, 4));
