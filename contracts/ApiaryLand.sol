@@ -26,6 +26,7 @@ contract ApiaryLand is IApiaryLand, AccessControl {
     // Constants
     bytes32 public constant OPERATOR_ROLE = keccak256("OPERATOR_ROLE");
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+    uint constant public PERCENTS_DIVISOR = 10000;
     uint constant public TOTAL_BEES = 7;
     uint constant public DEFAULT_SLOTS = 10;
     uint[] public beeSlots = [3, 7, 11, 18, 24, 29, 37];
@@ -416,10 +417,10 @@ contract ApiaryLand is IApiaryLand, AccessControl {
         // Calc bees profit (+ items bonus)
         for(uint i; i < bees.length; i++) {
             beesProfit += beeDailyProfits[i] * bees[i] * period / 1 days;
-            itemsProfit += beeDailyProfits[i] * bees[i] * itemBonusPercents[items[i]] * period / 1 days / 10000;
+            itemsProfit += beeDailyProfits[i] * bees[i] * itemBonusPercents[items[i]] * period / 1 days / PERCENTS_DIVISOR;
         }
 
         // Apply set bonus
-        return beesProfit + itemsProfit + (beesProfit * setBonusPercents[getSetId(items)] / 10000);
+        return beesProfit + itemsProfit + (beesProfit * setBonusPercents[getSetId(items)] / PERCENTS_DIVISOR);
     }
 }
