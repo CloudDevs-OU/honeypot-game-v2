@@ -420,6 +420,6 @@ contract ApiaryLand is IApiaryLand, AccessControl {
         }
 
         // Apply set bonus
-        return beesProfit + itemsProfit + (beesProfit * setBonusPercents[getSetId(items)] / 1000);
+        return beesProfit + itemsProfit + (beesProfit * setBonusPercents[getSetId(items)] / 10000);
     }
 }
