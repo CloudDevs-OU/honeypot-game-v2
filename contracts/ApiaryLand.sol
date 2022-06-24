@@ -390,9 +390,9 @@ contract ApiaryLand is IApiaryLand, AccessControl {
 
         uint notDeferredProfit;
         if (apiary[owner].lastDeferredPayoutTimestamp == 0) {
-            calcPureProfit(bees, items, block.timestamp - apiary[owner].workStartTime);
+            notDeferredProfit = calcPureProfit(bees, items, block.timestamp - apiary[owner].workStartTime);
         } else {
-            calcPureProfit(bees, items, block.timestamp - apiary[owner].lastDeferredPayoutTimestamp);
+            notDeferredProfit = calcPureProfit(bees, items, block.timestamp - apiary[owner].lastDeferredPayoutTimestamp);
         }
         // Apply mood factor
         return (notDeferredProfit + apiary[owner].deferredProfit) * uint(int(10000) + getApiaryMood(owner)) / 10000;
