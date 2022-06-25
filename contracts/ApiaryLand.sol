@@ -53,6 +53,12 @@ contract ApiaryLand is IApiaryLand, AccessControl {
         _;
     }
 
+    // Events
+    event MoodRecoveryTimeUpdate(uint newValue);
+    event NoneProfitTimeoutUpdate(uint newValue);
+    event BeeDailyProfitsUpdate(uint[7] newValues);
+    event SetUpdate(uint setId, uint setBonusPercentage, uint[7] itemIds, uint[7] itemBonusPercentage);
+
     constructor() {
         moodRecoveryTime = 6 days;
         noneProfitTimeout = 1 days;
@@ -146,6 +152,7 @@ contract ApiaryLand is IApiaryLand, AccessControl {
      */
     function setMoodRecoveryTime(uint _moodRecoveryTime) external onlyRole(DEFAULT_ADMIN_ROLE) {
         moodRecoveryTime = _moodRecoveryTime;
+        emit MoodRecoveryTimeUpdate(_moodRecoveryTime);
     }
 
     /**
@@ -156,6 +163,7 @@ contract ApiaryLand is IApiaryLand, AccessControl {
      */
     function setNoneProfitTimeout(uint _noneProfitTimeout) external onlyRole(DEFAULT_ADMIN_ROLE) {
         noneProfitTimeout = _noneProfitTimeout;
+        emit NoneProfitTimeoutUpdate(_noneProfitTimeout);
     }
 
     /**
@@ -166,6 +174,7 @@ contract ApiaryLand is IApiaryLand, AccessControl {
      */
     function setBeeDailyProfits(uint[7] memory _beeDailyProfits) external onlyRole(DEFAULT_ADMIN_ROLE) {
         beeDailyProfits = _beeDailyProfits;
+        emit BeeDailyProfitsUpdate(_beeDailyProfits);
     }
 
     /**
@@ -192,6 +201,7 @@ contract ApiaryLand is IApiaryLand, AccessControl {
             itemSet[itemIds[i]] = setId;
             itemBee[itemIds[i]] = i + 1;
         }
+        emit SetUpdate(setId, setBonusPercentage, itemIds, itemBonusPercentage);
     }
 
     /**

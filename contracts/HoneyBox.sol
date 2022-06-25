@@ -32,6 +32,8 @@ contract HoneyBox is Ownable {
 
     // Events
     event Win(address account, uint boxId, uint boxPrice, PrizeType prizeType, uint value);
+    event BoxUpdate(uint boxId, uint price, Prize[] prizes);
+    event BoxDelete(uint boxId);
 
     // Modifiers
     /**
@@ -129,6 +131,7 @@ contract HoneyBox is Ownable {
             boxes[boxId].prizes[i] = prizes[i];
             boxes[boxId].totalWeight += prizes[i].weight;
         }
+        emit BoxUpdate(boxId, price, prizes);
     }
 
     /**
@@ -144,6 +147,7 @@ contract HoneyBox is Ownable {
                 boxIds.pop();
             }
         }
+        emit BoxDelete(boxId);
     }
 
     /*

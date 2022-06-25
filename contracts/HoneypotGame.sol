@@ -39,6 +39,12 @@ contract HoneypotGame is IHoneypotGame, ERC1155Holder, Ownable {
     event ClaimProfit(address account, uint profit);
     event PartnerReward(address account, address referral, uint line, uint reward);
     event MissedPartnerReward(address account, address referral, uint line, uint reward);
+    event AddItemsForSale(uint[] itemIds, uint[] prices);
+    event RegistrationPriceUpdate(uint newValue);
+    event SlotPriceUpdate(uint newValue);
+    event BeePricesUpdate(uint[7] newValues);
+    event PartnerRewardPercentsUpdate(uint[10] newValues);
+    event AliasPriceUpdate(uint newValue);
 
     // State
     IApiaryLand public land;
@@ -252,6 +258,7 @@ contract HoneypotGame is IHoneypotGame, ERC1155Holder, Ownable {
             salableItems.push(itemIds[i]);
             itemPrices[itemIds[i]] = prices[i];
         }
+        emit AddItemsForSale(itemIds, prices);
     }
 
     /**
@@ -263,6 +270,7 @@ contract HoneypotGame is IHoneypotGame, ERC1155Holder, Ownable {
      */
     function setRegistrationPrice(uint _registrationPrice) external onlyOwner {
         registrationPrice = _registrationPrice;
+        emit RegistrationPriceUpdate(_registrationPrice);
     }
 
     /**
@@ -274,6 +282,7 @@ contract HoneypotGame is IHoneypotGame, ERC1155Holder, Ownable {
      */
     function setSlotPrice(uint _slotPrice) external onlyOwner {
         slotPrice = _slotPrice;
+        emit SlotPriceUpdate(_slotPrice);
     }
 
     /**
@@ -285,6 +294,7 @@ contract HoneypotGame is IHoneypotGame, ERC1155Holder, Ownable {
      */
     function setBeePrices(uint[7] memory _beePrices) external onlyOwner {
         beePrices = _beePrices;
+        emit BeePricesUpdate(_beePrices);
     }
 
     /**
@@ -296,6 +306,7 @@ contract HoneypotGame is IHoneypotGame, ERC1155Holder, Ownable {
      */
     function setPartnerRewardPercents(uint[10] memory _partnerRewardPercents) external onlyOwner {
         partnerRewardPercents = _partnerRewardPercents;
+        emit PartnerRewardPercentsUpdate(_partnerRewardPercents);
     }
 
     /**
@@ -307,6 +318,7 @@ contract HoneypotGame is IHoneypotGame, ERC1155Holder, Ownable {
      */
     function setAliasPrice(uint _aliasPrice) external onlyOwner {
         aliasPrice = _aliasPrice;
+        emit AliasPriceUpdate(_aliasPrice);
     }
 
     /**
