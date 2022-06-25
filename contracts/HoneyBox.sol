@@ -117,7 +117,7 @@ contract HoneyBox is Ownable {
      * @param prizes array of possible prizes
      */
     function createOrUpdateBox(uint boxId, uint price, Prize[] memory prizes) external onlyOwner {
-        require(prizes.length > 0);
+        require(prizes.length > 0, "Prizes array is empty");
 
         if (boxes[boxId].totalWeight == 0) {
             boxIds.push(boxId);
