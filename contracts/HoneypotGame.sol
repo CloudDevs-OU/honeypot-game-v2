@@ -87,7 +87,6 @@ contract HoneypotGame is IHoneypotGame, ERC1155Holder, Ownable {
      */
     function register(address upline) external {
         require(!isRegistered(msg.sender), "User is already registered");
-        require(upline != address(0), 'Upline can not be zero');
         require(isRegistered(upline), "Upline is not registered");
 
         // Register user
