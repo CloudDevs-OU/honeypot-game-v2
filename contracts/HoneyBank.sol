@@ -3,7 +3,7 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "./HoneyToken.sol";
 import "./interface/IHoneyBank.sol";
 
@@ -14,7 +14,7 @@ import "./interface/IHoneyBank.sol";
 contract HoneyBank is IHoneyBank, AccessControl {
     // State variables
     HoneyToken public token;
-    IERC20 public stable;
+    IERC20Metadata public stable;
     uint public rate;
     uint public swapFee;
 
@@ -30,9 +30,10 @@ contract HoneyBank is IHoneyBank, AccessControl {
     event RateUpdate(uint newRate);
     event SwapFeeUpdate(uint newSwapFee);
 
-    constructor(IERC20 _stable) {
+    constructor(IERC20Metadata _stable) {
         token = new HoneyToken();
         stable = _stable;
+        require(token.decimals() == stable.decimals(), "Tokens decimals are not equal");
         rate = 42; // Stable Amount = Tokens Amount * rate / 10,000
         swapFee = 200; // 2 %
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
