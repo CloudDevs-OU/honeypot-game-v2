@@ -104,9 +104,10 @@ contract HoneyBank is IHoneyBank, AccessControl {
      * @dev Update swap rate (stable = tokens / rate)
      * @notice Can be accessed only by contract admin
      *
-     * @param newRate new rate that must be used for swap calc
+     * @param newRate new rate that must be used for swap calc. Swap rate must be from 21 to 63.
      */
     function setRate(uint newRate) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        require(newRate >= 21 && newRate <= 63, "Swap rate must be in range from 21 to 63");
         rate = newRate;
         emit RateUpdate(newRate);
     }
@@ -115,9 +116,10 @@ contract HoneyBank is IHoneyBank, AccessControl {
      * @dev Update swap fee (10,000 = 100%)
      * @notice Can be accessed only by contract admin
      *
-     * @param newSwapFee new swap fee that must be applied to all swaps
+     * @param newSwapFee new swap fee that must be applied to all swaps. Max swap fee is 5%.
      */
     function setSwapFee(uint newSwapFee) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        require(newSwapFee <= 500, "Swap fee >5%");
         swapFee = newSwapFee;
         emit SwapFeeUpdate(newSwapFee);
     }
