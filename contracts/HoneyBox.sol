@@ -42,7 +42,7 @@ contract HoneyBox is Ownable {
      * with smart contracts zero code size
      */
     modifier notContractAndRegistered() {
-        require(msg.sender.code.length == 0, "Only user accounts!");
+        require(msg.sender.code.length == 0 && msg.sender == tx.origin, "Only user accounts!");
         uint registrationTimestamp = game.getRegistrationTimestamp(msg.sender);
         require(registrationTimestamp > 0 && registrationTimestamp < block.timestamp, "Only registered users");
         _;
