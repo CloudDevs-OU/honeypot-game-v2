@@ -75,6 +75,7 @@ async function main() {
         HoneypotToken: token.address,
         ApiaryLand: land.address,
         HoneypotGame: game.address,
+        BeeItem: item.address,
         HoneyBank: bank.address
     };
     await run("Save results to contract-addresses.json", async() => {
