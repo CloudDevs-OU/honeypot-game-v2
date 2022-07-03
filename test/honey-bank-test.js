@@ -1,16 +1,19 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
-const STABLE_INITIAL_BALANCE = ethers.utils.parseEther("10000");
+const STABLE_INITIAL_BALANCE_NUMBER = 10000;
+const STABLE_INITIAL_BALANCE = ethers.utils.parseEther(STABLE_INITIAL_BALANCE_NUMBER.toString());
 let bank;
 let stable;
 let token;
 describe("HoneyBank", async function() {
     before(async function() {
         const signers = await ethers.getSigners();
-        const addresses = signers.map(a => a.address);
         const MockStable = await ethers.getContractFactory("MockStable");
-        stable = await MockStable.deploy(addresses, STABLE_INITIAL_BALANCE);
+        stable = await MockStable.deploy();
+        for (let i = 0; i < signers.length; i++) {
+            await stable.connect(signers[i]).claim(STABLE_INITIAL_BALANCE_NUMBER)
+        }
 
         const HoneyBank = await ethers.getContractFactory("HoneyBank");
         bank = await HoneyBank.deploy(stable.address);

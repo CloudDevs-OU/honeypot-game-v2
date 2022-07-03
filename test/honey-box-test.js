@@ -12,9 +12,11 @@ describe("HoneyBox", async function() {
     before(async function() {
         // Honey Bank
         const signers = await ethers.getSigners();
-        const addresses = signers.map(a => a.address);
         const MockStable = await ethers.getContractFactory("MockStable");
-        stable = await MockStable.deploy(addresses, ethers.utils.parseEther("100000"));
+        stable = await MockStable.deploy();
+        for (let i = 0; i < signers.length; i++) {
+            await stable.connect(signers[i]).claim(100000)
+        }
 
         const HoneyBank = await ethers.getContractFactory("HoneyBank");
         bank = await HoneyBank.deploy(stable.address);

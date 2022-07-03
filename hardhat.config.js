@@ -1,5 +1,6 @@
 require("@nomiclabs/hardhat-waffle");
-const {mnemonic} = require('./secrets.json');
+require("@nomiclabs/hardhat-etherscan");
+const {mnemonic, bscscanApiKey} = require('./secrets.json');
 
 task("accounts", "Prints the list of accounts", async () => {
     const accounts = await ethers.getSigners();
@@ -26,6 +27,11 @@ module.exports = {
             chainId: 56,
             gasPrice: 20000000000,
             accounts: {mnemonic: mnemonic}
+        }
+    },
+    etherscan: {
+        apiKey: {
+            bscTestnet: bscscanApiKey
         }
     },
     mocha: {

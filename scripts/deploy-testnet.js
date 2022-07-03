@@ -5,25 +5,21 @@ if (network.name !== 'testnet') {
     throw Error("This script can be run only in testnet");
 }
 
-const ONE_TOKEN = ethers.utils.parseEther("1");
-const STABLE_INITIAL_BALANCE = ONE_TOKEN.mul(100000); // 100,000
-
 async function main() {
     console.log("Start migration")
-    // Honey Bank
-    const signers = await ethers.getSigners();
-    const addresses = signers.map(a => a.address);
+    // Mock Stable
     const MockStable = await ethers.getContractFactory("MockStable");
 
     let stable;
     await run("Deploy MockStable", async () => {
-        stable = await MockStable.deploy(addresses, STABLE_INITIAL_BALANCE);
+        stable = await MockStable.deploy();
     })
 
+    // Honey Bank
     let bank;
     await run("Deploy HoneyBank", async () => {
         const HoneyBank = await ethers.getContractFactory("HoneyBank");
-        bank = await HoneyBank.deploy(stable.address);
+        bank = await HoneyBank.deploy(stable.address, { gasLimit: 4000000 });
     })
 
     const ERC20 = await ethers.getContractFactory("ERC20");
