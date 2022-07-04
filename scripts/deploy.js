@@ -76,7 +76,7 @@ async function main() {
         HoneyBank: bank.address
     };
 
-    const fileName = network.name === "bscMainnet" ? "contract-addresses.json" : "contract-addresses-testnet.json";
+    const fileName = network.name === "bscMainnet" ? "contract-addresses.json" : `contract-addresses-${network.name}.json`;
     await run(`Save results to ${fileName}`, async() => {
         fs.writeFileSync(`./${fileName}`, JSON.stringify(contractAddresses, null, 4));
     })
