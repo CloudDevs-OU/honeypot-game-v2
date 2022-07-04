@@ -17,4 +17,5 @@ artifacts
 ### Custom ###
 prod-secrets.json
 contract-addresses.json
+contract-addresses-testnet.json
 secrets.json

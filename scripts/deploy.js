@@ -1,25 +1,26 @@
 const {ethers, network} = require("hardhat");
 const fs = require("fs");
 
-if (network.name !== 'testnet') {
-    throw Error("This script can be run only in testnet");
-}
-
 async function main() {
-    console.log("Start migration")
-    // Mock Stable
-    const MockStable = await ethers.getContractFactory("MockStable");
+    console.log(`Start migration in '${network.name}' network...`);
 
-    let stable;
-    await run("Deploy MockStable", async () => {
-        stable = await MockStable.deploy();
-    })
+    let stableAddress;
+    if (network.name === "bscMainnet") {
+        stableAddress = "0x55d398326f99059ff775485246999027b3197955"; // USDT
+    } else {
+        // Mock Stable
+        const MockStable = await ethers.getContractFactory("MockStable");
+        await run("Deploy MockStable", async () => {
+            const stable = await MockStable.deploy();
+            stableAddress = stable.address;
+        })
+    }
 
     // Honey Bank
     let bank;
     await run("Deploy HoneyBank", async () => {
         const HoneyBank = await ethers.getContractFactory("HoneyBank");
-        bank = await HoneyBank.deploy(stable.address, { gasLimit: 4000000 });
+        bank = await HoneyBank.deploy(stableAddress, { gasLimit: 4000000 });
     })
 
     const ERC20 = await ethers.getContractFactory("ERC20");
@@ -67,60 +68,62 @@ async function main() {
 
     // Save addresses
     let contractAddresses = {
-        MockStableCoin: stable.address,
+        StableCoin: stableAddress,
         HoneypotToken: token.address,
         ApiaryLand: land.address,
         HoneypotGame: game.address,
         BeeItem: item.address,
         HoneyBank: bank.address
     };
-    await run("Save results to contract-addresses.json", async() => {
-        fs.writeFileSync("./contract-addresses.json", JSON.stringify(contractAddresses, null, 4));
+
+    const fileName = network.name === "bscMainnet" ? "contract-addresses.json" : "contract-addresses-testnet.json";
+    await run(`Save results to ${fileName}`, async() => {
+        fs.writeFileSync(`./${fileName}`, JSON.stringify(contractAddresses, null, 4));
     })
 
-    await run("Save 'common' set", async () => {
+    await run("Save 'Honey Hunter' set", async () => {
         await land.saveSet(1, 1000, [1,2,3,4,5,6,7], [1000,1000,1000,1000,1000,1000,1000])
     })
 
-    await run("Save 'uncommon' set", async () => {
+    await run("Save 'Sweet Bee' set", async () => {
         await land.saveSet(2, 2000, [8,9,10,11,12,13,14], [2000,2000,2000,2000,2000,2000,2000])
     })
 
-    await run("Save 'master' set", async () => {
+    await run("Save 'Holly Pot' set", async () => {
         await land.saveSet(3, 3000, [15,16,17,18,19,20,21], [3000,3000,3000,3000,3000,3000,3000])
     })
 
-    await run("Save 'epic' set", async () => {
+    await run("Save 'Golden Wings' set", async () => {
         await land.saveSet(4, 4000, [22,23,24,25,26,27,28], [4000,4000,4000,4000,4000,4000,4000])
     })
 
     await run("Add items for sale", async () => {
         await game.addItemsForSale(
             [
-                // Common set
+                // Honey Hunter set items
                 1,2,3,4,5,6,7,
-                // Uncommon set
+                // Sweet Bee set items
                 8,9,10,11,12,13,14,
-                // Master Set
+                // Holly Pot set items
                 15,16,17,18,19,20,21,
-                // Epic Set
+                // Golden Wings set items
                 22,23,24,25,26,27,28
             ],
             [
-                // Common set
+                // Honey Hunter set items prices
                 eth(5000),  eth(12500), eth(18750), eth(30000), eth(40000),  eth(50000),  eth(62500),
-                // Uncommon set
+                //  Sweet Bee set items prices
                 eth(10000), eth(25000), eth(37500), eth(60000), eth(80000),  eth(100000), eth(125000),
-                // Master Set
+                //  Holly Pot set items prices
                 eth(15000), eth(37500), eth(56250), eth(90000), eth(120000), eth(150000), eth(187500),
-                // Epic Set
+                //  Golden Wings set items prices
                 eth(20000), eth(50000), eth(75000), eth(12000), eth(160000), eth(200000), eth(250000)
             ]
         )
     })
 
     console.log("---------------------------------");
-    console.log("Migration successfully completed!");
+    console.log(`Migration to '${network.name}' network successfully completed!`);
 }
 
 main()
