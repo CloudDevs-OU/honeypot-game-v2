@@ -17,6 +17,7 @@ contract HoneypotGame is IHoneypotGame, ERC1155Holder, Ownable {
     // Structs
     struct User {
         address account;
+        bool banned;
         string[] accountAliases;
         address upline;
         uint registrationTimestamp;
@@ -45,6 +46,8 @@ contract HoneypotGame is IHoneypotGame, ERC1155Holder, Ownable {
     event BeePricesUpdate(uint[7] newValues);
     event PartnerRewardPercentsUpdate(uint[10] newValues);
     event AliasPriceUpdate(uint newValue);
+    event Ban(address account, string reason);
+    event Unban(address account);
 
     // State
     IApiaryLand public land;
@@ -61,6 +64,12 @@ contract HoneypotGame is IHoneypotGame, ERC1155Holder, Ownable {
     mapping(address => User) users;
     mapping(string => address) aliasAddress;
     uint public totalUsers;
+
+    // Modifiers
+    modifier notBanned() {
+        require(!users[msg.sender].banned, "Account is banned");
+        _;
+    }
 
     constructor(IApiaryLand _land, IBeeItem _item, IHoneyBank _bank) {
         land = _land;
@@ -118,7 +127,7 @@ contract HoneypotGame is IHoneypotGame, ERC1155Holder, Ownable {
      * @param beeIds array of bee ids to buy
      * @param amounts array that correspond to bee amounts from beeIds
      */
-    function buyBees(uint[] memory beeIds, uint[] memory amounts) external {
+    function buyBees(uint[] memory beeIds, uint[] memory amounts) external notBanned {
         uint totalCost;
         for(uint i; i < beeIds.length; i++) {
             totalCost += beePrices[beeIds[i] - 1] * amounts[i];
@@ -138,7 +147,7 @@ contract HoneypotGame is IHoneypotGame, ERC1155Holder, Ownable {
      * @param itemIds array of item ids
      * @param amounts array of amount of items corresponding to itemIds
      */
-    function buyItems(uint[] memory itemIds, uint[] memory amounts) external {
+    function buyItems(uint[] memory itemIds, uint[] memory amounts) external notBanned {
         require(itemIds.length == amounts.length, "itemIds.length must be equal to amounts.length");
         require(itemIds.length > 0, "packs must be > 0");
 
@@ -164,7 +173,7 @@ contract HoneypotGame is IHoneypotGame, ERC1155Holder, Ownable {
      *
      * @param packs 1 pack = 10 slots
      */
-    function buySlotPacks(uint packs) external {
+    function buySlotPacks(uint packs) external notBanned {
         require(packs > 0, "packs must be > 0");
 
         uint totalCost = packs * 10 * slotPrice;
@@ -182,7 +191,7 @@ contract HoneypotGame is IHoneypotGame, ERC1155Holder, Ownable {
      *
      * @param itemIds array of item ids that must be set. Each item must be appropriate for beeId (item index + 1)
      */
-    function setApiaryItems(uint[7] memory itemIds) external {
+    function setApiaryItems(uint[7] memory itemIds) external notBanned {
         (uint[7] memory notUsedItems, uint[7] memory newItems) = land.setApiaryItems(msg.sender, itemIds);
         for(uint i; i < notUsedItems.length; i++) {
             if (notUsedItems[i] != 0) {
@@ -201,7 +210,7 @@ contract HoneypotGame is IHoneypotGame, ERC1155Holder, Ownable {
      * @notice msg.sender must be registered
      *
      */
-    function claimProfit() external {
+    function claimProfit() external notBanned {
         uint profit = land.claimProfit(msg.sender);
         require(profit > 0, "Can't claim 0 profit");
         bank.add(msg.sender, profit);
@@ -217,7 +226,7 @@ contract HoneypotGame is IHoneypotGame, ERC1155Holder, Ownable {
      * @notice msg.sender must be registered
      *
      */
-    function buyAlias(string memory ref) external {
+    function buyAlias(string memory ref) external notBanned {
         require(users[msg.sender].account == msg.sender, "Only registered user");
         require(users[msg.sender].accountAliases.length < 10, "Max 10 aliases");
         bytes memory refBytes = bytes(ref);
@@ -321,6 +330,31 @@ contract HoneypotGame is IHoneypotGame, ERC1155Holder, Ownable {
     }
 
     /**
+     * @dev Add user to ban list by address
+     *
+     * @notice Can be accessed only by contract admin
+     *
+     * @param account address that must be banned
+     * @param reason ban reason
+     */
+    function ban(address account, string memory reason) external onlyOwner {
+        users[account].banned = true;
+        emit Ban(account, reason);
+    }
+
+    /**
+     * @dev Remove user from ban list by address
+     *
+     * @notice Can be accessed only by contract admin
+     *
+     * @param account address that must be unbanned
+     */
+    function unban(address account) external onlyOwner {
+        users[account].banned = false;
+        emit Unban(account);
+    }
+
+    /**
      * @dev Send partner reward to uplines
      *
      * @param referral user who made a buy
@@ -330,7 +364,7 @@ contract HoneypotGame is IHoneypotGame, ERC1155Holder, Ownable {
         address[] memory upline = getUplines(referral, REWARDABLE_LINES);
         for(uint i; i < upline.length && upline[i] != address(0); i++) {
             uint reward = spentAmount * partnerRewardPercents[i] / 10000;
-            if(users[upline[i]].partnerLevel > i) {
+            if(users[upline[i]].partnerLevel > i && !users[upline[i]].banned) {
                 users[upline[i]].partnerEarnReward[i] += reward;
                 bank.add(users[upline[i]].account, reward);
                 emit PartnerReward(users[upline[i]].account, referral, i + 1, reward);

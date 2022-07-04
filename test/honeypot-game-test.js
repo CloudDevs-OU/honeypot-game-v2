@@ -146,6 +146,25 @@ describe("HoneypotGame", async function() {
         expect(apiary.bees[6]).eq(0);
     })
 
+    it("should successfully ban user", async function() {
+        const [,user] = await ethers.getSigners();
+        await game.ban(user.address, "Test ban");
+        const userData = await game.getUser(user.address);
+        expect(userData.banned).eq(true);
+    })
+
+    it("should fail to buy bee with message 'Account is banned'", async function() {
+        const [,user] = await ethers.getSigners();
+        await expect(game.connect(user).buyBees([1], [1])).revertedWith("Account is banned");
+    })
+
+    it("should successfully unban user", async function() {
+        const [,user] = await ethers.getSigners();
+        await game.unban(user.address);
+        const userData = await game.getUser(user.address);
+        expect(userData.banned).eq(false);
+    })
+
     it("should send partner reward to admin", async function() {
         const [admin,user] = await ethers.getSigners();
 
