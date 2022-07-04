@@ -1,7 +1,7 @@
 {
   "registrationPrice": 5000,
   "slotPrice": 250,
-  "aliasPrice": 10000,
+  "aliasPrice": 2500,
   "swapRate": 42,
   "swapFeePercents": 2,
   "noneProfitTimeout": 86400,
@@ -10,7 +10,7 @@
     {
       "setId": 1,
       "type": "common",
-      "name": "Common Set #1",
+      "name": "Honey Hunter",
       "bonusPercents": 10,
       "items": [
         {
@@ -67,7 +67,7 @@
     {
       "setId": 2,
       "type": "uncommon",
-      "name": "Uncommon Set #1",
+      "name": "Sweet Bee",
       "bonusPercents": 20,
       "items": [
         {
@@ -124,7 +124,7 @@
     {
       "setId": 3,
       "type": "master",
-      "name": "Master Set #1",
+      "name": "Holly Pot",
       "bonusPercents": 30,
       "items": [
         {
@@ -181,53 +181,53 @@
     {
       "setId": 4,
       "type": "epic",
-      "name": "Epic Set #1",
+      "name": "Golden Wings",
       "bonusPercents": 40,
       "items": [
         {
-          "itemId": 15,
+          "itemId": 22,
           "beeId": 1,
           "name": "Epic Item #1",
           "price": 20000,
           "bonusPercents": 40
         },
         {
-          "itemId": 16,
+          "itemId": 23,
           "beeId": 2,
           "name": "Epic Item #2",
           "price": 50000,
           "bonusPercents": 40
         },
         {
-          "itemId": 17,
+          "itemId": 24,
           "beeId": 3,
           "name": "Epic Item #3",
           "price": 75000,
           "bonusPercents": 40
         },
         {
-          "itemId": 18,
+          "itemId": 25,
           "beeId": 4,
           "name": "Epic Item #4",
           "price": 120000,
           "bonusPercents": 40
         },
         {
-          "itemId": 19,
+          "itemId": 26,
           "beeId": 5,
           "name": "Epic Item #5",
           "price": 160000,
           "bonusPercents": 40
         },
         {
-          "itemId": 20,
+          "itemId": 27,
           "beeId": 6,
           "name": "Epic Item #6",
           "price": 200000,
           "bonusPercents": 40
         },
         {
-          "itemId": 21,
+          "itemId": 28,
           "beeId": 7,
           "name": "Epic Item #7",
           "price": 250000,

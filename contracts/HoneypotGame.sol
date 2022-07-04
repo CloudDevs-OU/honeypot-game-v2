@@ -78,7 +78,7 @@ contract HoneypotGame is IHoneypotGame, ERC1155Holder, Ownable {
 
         registrationPrice = 5000 ether;
         slotPrice = 250 ether;
-        aliasPrice = 10000 ether;
+        aliasPrice = 2500 ether;
         beePrices = [20000 ether, 50000 ether, 75000 ether, 120000 ether, 160000 ether, 200000 ether, 250000 ether];
         partnerRewardPercents = [500, 400, 300, 200, 100, 100, 100, 100, 100, 100]; // 1 % = 100
 
