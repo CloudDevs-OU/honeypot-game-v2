@@ -7,8 +7,9 @@ async function main() {
     let stableAddress;
     if (network.name === "bscMainnet") {
         stableAddress = "0x55d398326f99059ff775485246999027b3197955"; // USDT
+    } if (network.name === "bscTestnet") {
+        stableAddress = "0x7136672365a9a09eae2086fc911b948e81132040"; // Mock USDT
     } else {
-        // Mock Stable
         const MockStable = await ethers.getContractFactory("MockStable");
         await run("Deploy MockStable", async () => {
             const stable = await MockStable.deploy();
@@ -30,7 +31,7 @@ async function main() {
     let item;
     await run("Deploy BeeItem", async () => {
         const BeeItem = await ethers.getContractFactory("BeeItem");
-        item = await BeeItem.deploy("https://honeypot-game-fe.pages.dev/item/{id}.json");
+        item = await BeeItem.deploy(`https://${network.name === "bscMainnet" ? "app" : "testnet"}.honeypot.game/items/{id}.json`);
     })
 
     // ApiaryLand
