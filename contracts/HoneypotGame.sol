@@ -33,7 +33,6 @@ contract HoneypotGame is IHoneypotGame, ERC1155Holder, Ownable {
     // Structs
     struct User {
         address account;
-        bool banned;
         string[] accountAliases;
         address upline;
         uint registrationTimestamp;
@@ -41,6 +40,7 @@ contract HoneypotGame is IHoneypotGame, ERC1155Holder, Ownable {
         uint[10] partnerEarnReward;
         uint[10] partnerMissedReward;
         uint[10] partnerCount;
+        bool banned;
     }
 
     // Constants
