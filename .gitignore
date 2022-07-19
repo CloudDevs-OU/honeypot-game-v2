@@ -19,3 +19,4 @@ prod-secrets.json
 contract-addresses.json
 contract-addresses-**.json
 secrets.json
+release.md
