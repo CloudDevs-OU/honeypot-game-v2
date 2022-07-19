@@ -45,6 +45,7 @@ contract HoneypotGame is IHoneypotGame, ERC1155Holder, Ownable {
 
     // Constants
     uint constant public REWARDABLE_LINES = 10;
+    uint constant public EARLY_BIRD_BONUSES = 1000;
 
     // Events
     event UserRegistration(address account, address upline);
@@ -126,7 +127,7 @@ contract HoneypotGame is IHoneypotGame, ERC1155Holder, Ownable {
         }
 
         // Take registration fee
-        bank.subtract(msg.sender, registrationPrice);
+        bank.subtract(msg.sender, getRegistrationPrice());
 
         // Create apiary
         land.createApiary(msg.sender);
@@ -498,5 +499,18 @@ contract HoneypotGame is IHoneypotGame, ERC1155Holder, Ownable {
      */
     function getRegistrationTimestamp(address account) external view returns(uint) {
         return users[account].registrationTimestamp;
+    }
+
+    /**
+     * @dev Get registration price
+     *
+     * @return uint registration price
+     */
+    function getRegistrationPrice() public view returns (uint) {
+        if (totalUsers > EARLY_BIRD_BONUSES) {
+            return registrationPrice;
+        } else {
+            return registrationPrice / 2;
+        }
     }
 }

@@ -66,7 +66,7 @@ describe("HoneypotGame", async function() {
 
         // Check tokens balance diff
         const tokenBalanceAfter = await token.balanceOf(user.address);
-        const registrationPrice = await game.registrationPrice();
+        const registrationPrice = await game.getRegistrationPrice();
         expect(tokenBalanceBefore.sub(tokenBalanceAfter)).eq(registrationPrice);
 
         // Check user in registry
