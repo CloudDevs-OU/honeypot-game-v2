@@ -73,6 +73,11 @@ contract HoneyBox is Ownable {
     IBeeItem public item;
     IApiaryLand public land;
 
+    // Welcome Box
+    uint public constant welcomeBoxId = 1;
+    uint public availableWelcomeBoxes = 1000;
+    mapping(address => bool) welcomeBoxReceived;
+
     constructor(IHoneypotGame _game, IHoneyBank _bank, IBeeItem _item, IApiaryLand _land) {
         game = _game;
         bank = _bank;
@@ -87,10 +92,78 @@ contract HoneyBox is Ownable {
      */
     function open(uint boxId) external notContractAndRegistered {
         require(boxes[boxId].totalWeight > 0, "Unknown box id");
+        require(boxId != welcomeBoxId, "You can't open welcome box");
+        if (boxes[boxId].price > 0) {
+            bank.subtract(msg.sender, boxes[boxId].price);
+        }
+        play(boxId);
+    }
 
-        // Buy box
-        bank.subtract(msg.sender, boxes[boxId].price);
+    /**
+     * @dev Open welcome box
+     */
+    function openWelcomeBox() public notContractAndRegistered {
+        require(availableWelcomeBoxes > 0, "No more welcome boxes available");
+        require(!welcomeBoxReceived[msg.sender], "You already received welcome box");
+        require(boxes[welcomeBoxId].totalWeight > 0, "Box not configured");
 
+        welcomeBoxReceived[msg.sender] = true;
+        availableWelcomeBoxes--;
+        play(welcomeBoxId);
+    }
+
+    /**
+     * @dev Create or update existing box if box with such id is already exist
+     *
+     * @param boxId box identifier
+     * @param price box price in tokens
+     * @param prizes array of possible prizes
+     */
+    function createOrUpdateBox(uint boxId, uint price, Prize[] memory prizes) external onlyOwner {
+        require(prizes.length > 0, "Prizes array is empty");
+        require(boxId != welcomeBoxId || price == 0, "Welcome box must have zero price");
+
+        if (boxes[boxId].totalWeight == 0) {
+            boxIds.push(boxId);
+        }
+
+        boxes[boxId].price = price;
+        boxes[boxId].totalPrizes = prizes.length;
+        boxes[boxId].totalWeight = 0;
+        for (uint i; i < prizes.length; i++) {
+            require(prizes[i].weight > 0, "Prize weight can't be zero");
+            boxes[boxId].prizes[i] = prizes[i];
+            boxes[boxId].totalWeight += prizes[i].weight;
+        }
+        emit BoxUpdate(boxId, price, prizes);
+    }
+
+    /**
+     * @dev Delete box
+     *
+     * @param boxId box identifier
+     */
+    function deleteBox(uint boxId) external onlyOwner {
+        delete boxes[boxId];
+        for(uint i; i < boxIds.length; i++) {
+            if (boxIds[i] == boxId) {
+                boxIds[i] = boxIds[boxIds.length - 1];
+                boxIds.pop();
+            }
+        }
+
+        boxes[boxId].price = 0;
+        boxes[boxId].totalWeight = 0;
+        boxes[boxId].totalPrizes = 0;
+        emit BoxDelete(boxId);
+    }
+
+    /**
+     * @dev Open box and send prize
+     *
+     * @param boxId box identifier
+     */
+    function play(uint boxId) private {
         uint number = uint256(keccak256(abi.encodePacked(block.number, block.timestamp, block.difficulty, nonce))) % boxes[boxId].totalWeight;
         uint range;
         for (uint i; i < boxes[boxId].totalPrizes; i++) {
@@ -125,47 +198,6 @@ contract HoneyBox is Ownable {
         }
     }
 
-    /**
-     * @dev Create or update existing box if box with such id is already exist
-     *
-     * @param boxId box identifier
-     * @param price box price in tokens
-     * @param prizes array of possible prizes
-     */
-    function createOrUpdateBox(uint boxId, uint price, Prize[] memory prizes) external onlyOwner {
-        require(prizes.length > 0, "Prizes array is empty");
-
-        if (boxes[boxId].totalWeight == 0) {
-            boxIds.push(boxId);
-        }
-
-        boxes[boxId].price = price;
-        boxes[boxId].totalPrizes = prizes.length;
-        boxes[boxId].totalWeight = 0;
-        for (uint i; i < prizes.length; i++) {
-            require(prizes[i].weight > 0, "Prize weight can't be zero");
-            boxes[boxId].prizes[i] = prizes[i];
-            boxes[boxId].totalWeight += prizes[i].weight;
-        }
-        emit BoxUpdate(boxId, price, prizes);
-    }
-
-    /**
-     * @dev Delete box
-     *
-     * @param boxId box identifier
-     */
-    function deleteBox(uint boxId) external onlyOwner {
-        delete boxes[boxId];
-        for(uint i; i < boxIds.length; i++) {
-            if (boxIds[i] == boxId) {
-                boxIds[i] = boxIds[boxIds.length - 1];
-                boxIds.pop();
-            }
-        }
-        emit BoxDelete(boxId);
-    }
-
     /*
      * @dev Get active box ids
      *
@@ -188,4 +220,16 @@ contract HoneyBox is Ownable {
             prizes[i] = boxes[boxId].prizes[i];
         }
     }
+
+    /**
+     * @dev Check is welcome box available for user
+     *
+     * @param account user address
+     */
+    function isWelcomeBoxAvailable(address account) external view returns(bool) {
+        uint registrationTimestamp = game.getRegistrationTimestamp(msg.sender);
+        return registrationTimestamp > 0 && availableWelcomeBoxes > 0 && !welcomeBoxReceived[account];
+    }
+
+
 }
