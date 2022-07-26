@@ -93,9 +93,8 @@ contract HoneyBox is Ownable {
     function open(uint boxId) external notContractAndRegistered {
         require(boxes[boxId].totalWeight > 0, "Unknown box id");
         require(boxId != welcomeBoxId, "You can't open welcome box");
-        if (boxes[boxId].price > 0) {
-            bank.subtract(msg.sender, boxes[boxId].price);
-        }
+        require(boxes[boxId].price > 0, "Invalid box price");
+        bank.subtract(msg.sender, boxes[boxId].price);
         play(boxId);
     }
 
