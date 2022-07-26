@@ -264,4 +264,42 @@ describe("HoneyBox", async function() {
         const boxIds = await box.getBoxIds();
         expect(boxIds.find(id => id.eq(welcomeBoxId))).undefined;
     })
+
+    it("should failed to open not configured everyday box ", async () => {
+        const [,user] = await ethers.getSigners();
+        await expect(box.connect(user).openEverydayBox()).revertedWith('Box not configured')
+    })
+
+    it("should successfully configure everyday box", async () => {
+        const everydayBoxId = await box.everydayBoxId();
+        await box.createOrUpdateBox(everydayBoxId, 0, [{prizeType: 0, value: 777, weight: 1}]);
+        const boxIds = await box.getBoxIds();
+        expect(boxIds.find(id => id.eq(everydayBoxId))).not.undefined;
+    })
+
+    it("should successfully open welcome box", async () => {
+        const [,user] = await ethers.getSigners();
+        const lastOpenTimestamp = await box.getLastEverydayBoxOpenTime(user.address)
+        expect(lastOpenTimestamp.eq(0)).true;
+        await box.connect(user).openEverydayBox();
+    })
+
+    it("should fail to open everyday box one more time", async () => {
+        const [,user] = await ethers.getSigners();
+        const lastOpenTimestamp = await box.getLastEverydayBoxOpenTime(user.address)
+        expect(lastOpenTimestamp.gt(0)).true;
+        await expect(box.connect(user).openEverydayBox()).revertedWith("Box already opened today");
+    })
+
+    it("should fail to open welcome box via 'open' function", async () => {
+        const everydayBoxId = await box.everydayBoxId();
+        await expect(box.open(everydayBoxId)).revertedWith("You can't open everyday box");
+    })
+
+    it("should successfully delete welcome box", async () => {
+        const everydayBoxId = await box.everydayBoxId();
+        await expect(box.deleteBox(everydayBoxId));
+        const boxIds = await box.getBoxIds();
+        expect(boxIds.find(id => id.eq(everydayBoxId))).undefined;
+    })
 })

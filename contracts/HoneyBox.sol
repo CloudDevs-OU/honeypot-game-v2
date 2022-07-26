@@ -74,9 +74,13 @@ contract HoneyBox is Ownable {
     IApiaryLand public land;
 
     // Welcome Boxes
-    uint public constant welcomeBoxId = 1;
+    uint public constant welcomeBoxId = 42;
     uint public availableWelcomeBoxes = 1000;
     mapping(address => bool) welcomeBoxOpened;
+
+    // Everyday Boxes
+    uint public constant everydayBoxId = 4242;
+    mapping(address => uint) lastEverydayBoxOpen;
 
     constructor(IHoneypotGame _game, IHoneyBank _bank, IBeeItem _item, IApiaryLand _land) {
         game = _game;
@@ -93,6 +97,7 @@ contract HoneyBox is Ownable {
     function open(uint boxId) external notContractAndRegistered {
         require(boxes[boxId].totalWeight > 0, "Unknown box id");
         require(boxId != welcomeBoxId, "You can't open welcome box");
+        require(boxId != everydayBoxId, "You can't open everyday box");
         require(boxes[boxId].price > 0, "Invalid box price");
         bank.subtract(msg.sender, boxes[boxId].price);
         play(boxId);
@@ -112,6 +117,18 @@ contract HoneyBox is Ownable {
     }
 
     /**
+     * @dev Open everyday box
+     */
+    function openEverydayBox() public notContractAndRegistered {
+        require(boxes[everydayBoxId].totalWeight > 0, "Box not configured");
+        if (lastEverydayBoxOpen[msg.sender] > 0) {
+            require(block.timestamp - lastEverydayBoxOpen[msg.sender] > 1 days, "Box already opened today");
+        }
+        lastEverydayBoxOpen[msg.sender] = block.timestamp;
+        play(everydayBoxId);
+    }
+
+    /**
      * @dev Create or update existing box if box with such id is already exist
      *
      * @param boxId box identifier
@@ -121,6 +138,7 @@ contract HoneyBox is Ownable {
     function createOrUpdateBox(uint boxId, uint price, Prize[] memory prizes) external onlyOwner {
         require(prizes.length > 0, "Prizes array is empty");
         require(boxId != welcomeBoxId || price == 0, "Welcome box must have zero price");
+        require(boxId != everydayBoxId || price == 0, "Everyday box must have zero price");
 
         if (boxes[boxId].totalWeight == 0) {
             boxIds.push(boxId);
@@ -230,5 +248,14 @@ contract HoneyBox is Ownable {
         return registrationTimestamp > 0 && availableWelcomeBoxes > 0 && !welcomeBoxOpened[account];
     }
 
-
+    /**
+     * @dev Get last everyday box open time
+     *
+     * @param account user address
+     *
+     * @return time in seconds
+     */
+    function getLastEverydayBoxOpenTime(address account) external view returns(uint) {
+        return lastEverydayBoxOpen[account];
+    }
 }
