@@ -73,10 +73,10 @@ contract HoneyBox is Ownable {
     IBeeItem public item;
     IApiaryLand public land;
 
-    // Welcome Box
+    // Welcome Boxes
     uint public constant welcomeBoxId = 1;
     uint public availableWelcomeBoxes = 1000;
-    mapping(address => bool) welcomeBoxReceived;
+    mapping(address => bool) welcomeBoxOpened;
 
     constructor(IHoneypotGame _game, IHoneyBank _bank, IBeeItem _item, IApiaryLand _land) {
         game = _game;
@@ -104,10 +104,10 @@ contract HoneyBox is Ownable {
      */
     function openWelcomeBox() public notContractAndRegistered {
         require(availableWelcomeBoxes > 0, "No more welcome boxes available");
-        require(!welcomeBoxReceived[msg.sender], "You already received welcome box");
+        require(!welcomeBoxOpened[msg.sender], "You already received welcome box");
         require(boxes[welcomeBoxId].totalWeight > 0, "Box not configured");
 
-        welcomeBoxReceived[msg.sender] = true;
+        welcomeBoxOpened[msg.sender] = true;
         availableWelcomeBoxes--;
         play(welcomeBoxId);
     }
@@ -228,7 +228,7 @@ contract HoneyBox is Ownable {
      */
     function isWelcomeBoxAvailable(address account) external view returns(bool) {
         uint registrationTimestamp = game.getRegistrationTimestamp(msg.sender);
-        return registrationTimestamp > 0 && availableWelcomeBoxes > 0 && !welcomeBoxReceived[account];
+        return registrationTimestamp > 0 && availableWelcomeBoxes > 0 && !welcomeBoxOpened[account];
     }
 
 
