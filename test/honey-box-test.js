@@ -229,6 +229,9 @@ describe("HoneyBox", async function() {
         await box.connect(user).open(7);
         const balanceAfter = await item.balanceOf(user.address, 1);
         expect(balanceAfter).eq(balanceBefore.add(1));
+
+        const lastWin = await box.getLastWin(user.address);
+        expect(lastWin.prizeType).eq(3);
     })
 
     it("should failed to open not configured welcome box ", async () => {

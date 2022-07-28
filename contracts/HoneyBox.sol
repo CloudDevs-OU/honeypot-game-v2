@@ -72,6 +72,7 @@ contract HoneyBox is Ownable {
     IHoneyBank public bank;
     IBeeItem public item;
     IApiaryLand public land;
+    mapping(address => Prize) lastWin;
 
     // Welcome Boxes
     uint public constant welcomeBoxId = 42;
@@ -203,6 +204,7 @@ contract HoneyBox is Ownable {
 
                     land.addBees(msg.sender, bee, amount);
                 }
+                lastWin[msg.sender] = boxes[boxId].prizes[i];
                 emit Win(
                     msg.sender,
                     boxId,
@@ -257,5 +259,16 @@ contract HoneyBox is Ownable {
      */
     function getLastEverydayBoxOpenTime(address account) external view returns(uint) {
         return lastEverydayBoxOpen[account];
+    }
+
+    /**
+     * @dev Get account win
+     *
+     * @param account user address
+     *
+     * @return prize
+     */
+    function getLastWin(address account) external view returns(Prize memory) {
+        return lastWin[account];
     }
 }
