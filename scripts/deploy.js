@@ -1,5 +1,6 @@
 const {ethers, network} = require("hardhat");
 const fs = require("fs");
+const prizes = { slots: 0, tokens: 1, bee: 2, nft: 3 };
 
 async function main() {
     console.log(`Start migration in '${network.name}' network...`);
@@ -48,23 +49,150 @@ async function main() {
         game = await HoneypotGame.deploy(land.address, item.address, bank.address);
     })
 
-    // Grant HoneypotGame roles
+    // HoneypotBox
+    let box;
+    await run("Deploy HoneypotBox", async () => {
+        const HoneyBox = await ethers.getContractFactory("HoneyBox");
+        box = await HoneyBox.deploy(game.address, bank.address, item.address, land.address);
+    })
+
+    await run("Setup 'Welcome' box", async () => {
+        // Setup Welcome box
+        const welcomeBoxId = await box.welcomeBoxId();
+        await box.createOrUpdateBox(welcomeBoxId, 0, [
+            // Slots
+            {prizeType: prizes.slots, weight: 10000, value: 3}, // 3 Slots
+            {prizeType: prizes.slots, weight: 9000, value: 4},  // 4 Slots
+            {prizeType: prizes.slots, weight: 8000, value: 5},  // 5 Slots
+            {prizeType: prizes.slots, weight: 7000, value: 8},  // 8 Slots
+
+            // Tokens
+            {prizeType: prizes.tokens, weight: 6000, value: eth(1000)},  // 1,000 HNY
+            {prizeType: prizes.tokens, weight: 5000, value: eth(2000)},  // 2,000 HNY
+            {prizeType: prizes.tokens, weight: 4000, value: eth(4000)},  // 4,000 HNY
+            {prizeType: prizes.tokens, weight: 3000, value: eth(8000)},  // 8,000 HNY
+
+            // Bees
+            {prizeType: prizes.bee, weight: 10, value: 1},  // Bee Level 1
+            {prizeType: prizes.bee, weight: 10, value: 2},  // Bee Level 2
+            {prizeType: prizes.bee, weight: 10, value: 3},  // Bee Level 3
+            {prizeType: prizes.bee, weight: 10, value: 4},  // Bee Level 4
+            {prizeType: prizes.bee, weight: 10, value: 5},  // Bee Level 5
+            {prizeType: prizes.bee, weight: 10, value: 6},  // Bee Level 6
+            {prizeType: prizes.bee, weight: 10, value: 7},  // Bee Level 7
+
+            // NFT
+            {prizeType: prizes.nft, weight: 1050, value: 1}, // Common #1
+            {prizeType: prizes.nft, weight: 1000, value: 2}, // Common #2
+            {prizeType: prizes.nft, weight: 950, value: 3},  // Common #3
+            {prizeType: prizes.nft, weight: 900, value: 4},  // Common #4
+            {prizeType: prizes.nft, weight: 850, value: 5},  // Common #5
+            {prizeType: prizes.nft, weight: 800, value: 6},  // Common #6
+            {prizeType: prizes.nft, weight: 750, value: 7},  // Common #7
+
+            {prizeType: prizes.nft, weight: 700, value: 8},  // Uncommon #1
+            {prizeType: prizes.nft, weight: 650, value: 9},  // Uncommon #2
+            {prizeType: prizes.nft, weight: 600, value: 10}, // Uncommon #3
+            {prizeType: prizes.nft, weight: 550, value: 11}, // Uncommon #4
+            {prizeType: prizes.nft, weight: 500, value: 12}, // Uncommon #5
+            {prizeType: prizes.nft, weight: 450, value: 13}, // Uncommon #6
+            {prizeType: prizes.nft, weight: 400, value: 14}, // Uncommon #7
+
+            {prizeType: prizes.nft, weight: 350, value: 15}, // Master #1
+            {prizeType: prizes.nft, weight: 300, value: 16}, // Master #2
+            {prizeType: prizes.nft, weight: 250, value: 17}, // Master #3
+            {prizeType: prizes.nft, weight: 200, value: 18}, // Master #4
+            {prizeType: prizes.nft, weight: 150, value: 19}, // Master #5
+            {prizeType: prizes.nft, weight: 100, value: 20}, // Master #6
+            {prizeType: prizes.nft, weight: 50, value: 21},  // Master #7
+
+            {prizeType: prizes.nft, weight: 10, value: 22},  // Epic #1
+            {prizeType: prizes.nft, weight: 10, value: 23},  // Epic #2
+            {prizeType: prizes.nft, weight: 10, value: 24},  // Epic #3
+            {prizeType: prizes.nft, weight: 10, value: 25},  // Epic #4
+            {prizeType: prizes.nft, weight: 10, value: 26},  // Epic #5
+            {prizeType: prizes.nft, weight: 10, value: 27},  // Epic #6
+            {prizeType: prizes.nft, weight: 10, value: 28},  // Epic #7
+        ]);
+    })
+
+    await run("Setup 'Everyday' box", async () => {
+        const everydayBoxId = await box.everydayBoxId();
+        await box.createOrUpdateBox(everydayBoxId, 0, [
+            // Slots
+            {prizeType: prizes.slots, weight: 100000, value: 1}, // 1 Slot
+            {prizeType: prizes.slots, weight: 25000, value: 2},  // 2 Slots
+            {prizeType: prizes.slots, weight: 25000, value: 3},  // 3 Slots
+            {prizeType: prizes.slots, weight: 15000, value: 4},  // 4 Slots
+            {prizeType: prizes.slots, weight: 10000, value: 5},  // 5 Slots
+            {prizeType: prizes.slots, weight: 5000, value: 8},   // 8 Slots
+
+            // Tokens
+            {prizeType: prizes.tokens, weight: 2000, value: eth(250)},  // 250 HNY
+            {prizeType: prizes.tokens, weight: 1000, value: eth(500)},  // 500 HNY
+            {prizeType: prizes.tokens, weight: 500, value: eth(1000)},  // 1,000 HNY
+            {prizeType: prizes.tokens, weight: 250, value: eth(2000)},  // 2,000 HNY
+
+            // NFT
+            {prizeType: prizes.nft, weight: 28, value: 1},  // Common #1
+            {prizeType: prizes.nft, weight: 27, value: 2},  // Common #2
+            {prizeType: prizes.nft, weight: 26, value: 3},  // Common #3
+            {prizeType: prizes.nft, weight: 25, value: 4},  // Common #4
+            {prizeType: prizes.nft, weight: 24, value: 5},  // Common #5
+            {prizeType: prizes.nft, weight: 23, value: 6},  // Common #6
+            {prizeType: prizes.nft, weight: 22, value: 7},  // Common #7
+
+            {prizeType: prizes.nft, weight: 21, value: 8},  // Uncommon #1
+            {prizeType: prizes.nft, weight: 20, value: 9},  // Uncommon #2
+            {prizeType: prizes.nft, weight: 19, value: 10}, // Uncommon #3
+            {prizeType: prizes.nft, weight: 18, value: 11}, // Uncommon #4
+            {prizeType: prizes.nft, weight: 17, value: 12}, // Uncommon #5
+            {prizeType: prizes.nft, weight: 16, value: 13}, // Uncommon #6
+            {prizeType: prizes.nft, weight: 15, value: 14}, // Uncommon #7
+
+            {prizeType: prizes.nft, weight: 14, value: 15}, // Master #1
+            {prizeType: prizes.nft, weight: 13, value: 16}, // Master #2
+            {prizeType: prizes.nft, weight: 12, value: 17}, // Master #3
+            {prizeType: prizes.nft, weight: 11, value: 18}, // Master #4
+            {prizeType: prizes.nft, weight: 10, value: 19}, // Master #5
+            {prizeType: prizes.nft, weight: 9, value: 20},  // Master #6
+            {prizeType: prizes.nft, weight: 8, value: 21},  // Master #7
+
+            {prizeType: prizes.nft, weight: 7, value: 22},  // Epic #1
+            {prizeType: prizes.nft, weight: 6, value: 23},  // Epic #2
+            {prizeType: prizes.nft, weight: 5, value: 24},  // Epic #3
+            {prizeType: prizes.nft, weight: 4, value: 25},  // Epic #4
+            {prizeType: prizes.nft, weight: 3, value: 26},  // Epic #5
+            {prizeType: prizes.nft, weight: 2, value: 27},  // Epic #6
+            {prizeType: prizes.nft, weight: 1, value: 28},  // Epic #7
+        ]);
+    })
+
+    // Grant roles
     // Bank: BANKER_ROLE
-    await run("Grant HoneyBank.BANKER_ROLE to HoneypotGame", async () => {
+    await run("Grant HoneyBank.BANKER_ROLE to HoneypotGame and HoneyBox", async () => {
         const bankerRole = await bank.BANKER_ROLE();
         await bank.grantRole(bankerRole, game.address);
+        await bank.grantRole(bankerRole, box.address);
     })
 
     // Land: OPERATOR_ROLE
-    await run("Grant ApiaryLand.OPERATOR_ROLE to HoneypotGame", async() => {
+    await run("Grant ApiaryLand.OPERATOR_ROLE to HoneypotGame and HoneyBox", async() => {
         const operatorRole = await land.OPERATOR_ROLE();
         await land.grantRole(operatorRole, game.address);
+        await land.grantRole(operatorRole, box.address);
     })
 
-    // Bee Item: MINTER_ROLE
+    // Bee Item: OPERATOR_ROLE
     await run("Grant BeeItem.OPERATOR_ROLE to HoneypotGame", async() => {
         const itemOperatorRole = await item.OPERATOR_ROLE();
         await item.grantRole(itemOperatorRole, game.address);
+    })
+
+    // Bee Item: MINTER_ROLE
+    await run("Grant BeeItem.MINTER_ROLE to HoneyBox", async() => {
+        const minterOperatorRole = await item.MINTER_ROLE();
+        await item.grantRole(minterOperatorRole, box.address);
     })
 
     // Save addresses
