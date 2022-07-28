@@ -33,6 +33,7 @@ contract HoneyBank is IHoneyBank, AccessControl {
     IERC20Metadata public stable;
     uint public rate;
     uint public swapFee;
+    uint public lastRateChangeTimestamp;
 
     // Constants
     uint public constant MIN_SWAP_TOKENS_AMOUNT = 100 ether;
@@ -125,6 +126,8 @@ contract HoneyBank is IHoneyBank, AccessControl {
      */
     function setRate(uint newRate) external onlyRole(DEFAULT_ADMIN_ROLE) {
         require(newRate >= 21 && newRate <= 63, "Swap rate must be in range from 21 to 63");
+        require(lastRateChangeTimestamp == 0 || block.timestamp - lastRateChangeTimestamp > 10 days, "Rate change must be at least 10 days");
+        lastRateChangeTimestamp = block.timestamp;
         rate = newRate;
         emit RateUpdate(newRate);
     }

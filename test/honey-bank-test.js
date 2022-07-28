@@ -124,4 +124,14 @@ describe("HoneyBank", async function() {
 
         expect(await stable.balanceOf(user.address)).eq(stableBalanceBefore.add(stableAmount));
     })
+
+    it("should successfully update rate", async function() {
+        await bank.setRate(30);
+        const rate = await bank.rate();
+        expect(rate.eq(30)).true;
+    })
+
+    it("should fail to update rate", async function() {
+        await expect(bank.setRate(40)).revertedWith("Rate change must be at least 10 days");
+    })
 })
