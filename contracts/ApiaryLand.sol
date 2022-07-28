@@ -410,6 +410,22 @@ contract ApiaryLand is IApiaryLand, AccessControl {
         uint[7] memory bees,
         uint[7] memory items
     ) public view returns(uint) {
+        return calcAvailableProfit(owner, bees, items) * uint(int(10000) + getApiaryMood(owner)) / 10000;
+    }
+
+    /**
+     * @dev Calculate available profit (mood factor is not applied)
+     *
+     * @param owner Apiary owner
+     * @param bees Owner bees
+     * @param items Owner items
+     * @return profit value
+     */
+    function calcAvailableProfit(
+        address owner,
+        uint[7] memory bees,
+        uint[7] memory items
+    ) public view returns(uint) {
         if(block.timestamp < apiary[owner].workStartTime) {
             return 0;
         }
@@ -420,8 +436,8 @@ contract ApiaryLand is IApiaryLand, AccessControl {
         } else {
             notDeferredProfit = calcPureProfit(bees, items, block.timestamp - apiary[owner].lastDeferredPayoutTimestamp);
         }
-        // Apply mood factor
-        return (notDeferredProfit + apiary[owner].deferredProfit) * uint(int(10000) + getApiaryMood(owner)) / 10000;
+
+        return notDeferredProfit + apiary[owner].deferredProfit;
     }
 
     /**
