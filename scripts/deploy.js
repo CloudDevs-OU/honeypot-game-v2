@@ -202,7 +202,8 @@ async function main() {
         ApiaryLand: land.address,
         HoneypotGame: game.address,
         BeeItem: item.address,
-        HoneyBank: bank.address
+        HoneyBank: bank.address,
+        HoneyBox: box.address
     };
 
     const fileName = network.name === "bscMainnet" ? "contract-addresses.json" : `contract-addresses-${network.name}.json`;

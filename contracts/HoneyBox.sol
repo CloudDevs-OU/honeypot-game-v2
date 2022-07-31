@@ -246,7 +246,7 @@ contract HoneyBox is Ownable {
      * @param account user address
      */
     function isWelcomeBoxAvailable(address account) external view returns(bool) {
-        uint registrationTimestamp = game.getRegistrationTimestamp(msg.sender);
+        uint registrationTimestamp = game.getRegistrationTimestamp(account);
         return registrationTimestamp > 0 && availableWelcomeBoxes > 0 && !welcomeBoxOpened[account];
     }
 

@@ -246,6 +246,12 @@ describe("HoneyBox", async function() {
         expect(boxIds.find(id => id.eq(welcomeBoxId))).not.undefined;
     })
 
+    it("should return isWelcomeBoxAvailable true", async () => {
+        const [,user] = await ethers.getSigners();
+        const isAvailable = await box.connect(user).isWelcomeBoxAvailable(user.address);
+        expect(isAvailable).true;
+    })
+
     it("should successfully open welcome box", async () => {
         const [,user] = await ethers.getSigners();
         await box.connect(user).openWelcomeBox();
