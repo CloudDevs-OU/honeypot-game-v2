@@ -1,6 +1,7 @@
 const {ethers, network} = require("hardhat");
 const fs = require("fs");
 const prizes = { slots: 0, tokens: 1, bee: 2, nft: 3 };
+const CONFIRMATIONS = 5;
 
 async function main() {
     console.log(`Start migration in '${network.name}' network...`);
@@ -8,7 +9,7 @@ async function main() {
     let stableAddress;
     if (network.name === "bscMainnet") {
         stableAddress = "0x55d398326f99059ff775485246999027b3197955"; // USDT
-    } if (network.name === "bscTestnet") {
+    } else if (network.name === "bscTestnet") {
         stableAddress = "0x7136672365a9a09eae2086fc911b948e81132040"; // Mock USDT
     } else {
         const MockStable = await ethers.getContractFactory("MockStable");
@@ -23,6 +24,7 @@ async function main() {
     await run("Deploy HoneyBank", async () => {
         const HoneyBank = await ethers.getContractFactory("HoneyBank");
         bank = await HoneyBank.deploy(stableAddress, { gasLimit: 4000000 });
+        await bank.deployTransaction.wait(CONFIRMATIONS);
     })
 
     const ERC20 = await ethers.getContractFactory("ERC20");
@@ -32,7 +34,8 @@ async function main() {
     let item;
     await run("Deploy BeeItem", async () => {
         const BeeItem = await ethers.getContractFactory("BeeItem");
-        item = await BeeItem.deploy(`https://${network.name === "bscMainnet" ? "app" : "testnet"}.honeypot.game/items/{id}.json`);
+        item = await BeeItem.deploy(`https://${network.name === "bscMainnet" ? "app" : "testnet"}.honeypot.game/assets/files/nft/{id}.json`);
+        await item.deployTransaction.wait(CONFIRMATIONS);
     })
 
     // ApiaryLand
@@ -40,6 +43,7 @@ async function main() {
     await run("Deploy ApiaryLand", async () => {
         const ApiaryLand = await ethers.getContractFactory("ApiaryLand");
         land = await ApiaryLand.deploy();
+        await land.deployTransaction.wait(CONFIRMATIONS);
     })
 
     // HoneypotGame
@@ -47,6 +51,7 @@ async function main() {
     await run("Deploy HoneypotGame", async () => {
         const HoneypotGame = await ethers.getContractFactory("HoneypotGame");
         game = await HoneypotGame.deploy(land.address, item.address, bank.address);
+        await game.deployTransaction.wait(CONFIRMATIONS);
     })
 
     // HoneypotBox
@@ -54,12 +59,13 @@ async function main() {
     await run("Deploy HoneypotBox", async () => {
         const HoneyBox = await ethers.getContractFactory("HoneyBox");
         box = await HoneyBox.deploy(game.address, bank.address, item.address, land.address);
+        await box.deployTransaction.wait(CONFIRMATIONS);
     })
 
     await run("Setup 'Welcome' box", async () => {
         // Setup Welcome box
         const welcomeBoxId = await box.welcomeBoxId();
-        await box.createOrUpdateBox(welcomeBoxId, 0, [
+        const tx = await box.createOrUpdateBox(welcomeBoxId, 0, [
             // Slots
             {prizeType: prizes.slots, weight: 10000, value: 3}, // 3 Slots
             {prizeType: prizes.slots, weight: 9000, value: 4},  // 4 Slots
@@ -114,11 +120,13 @@ async function main() {
             {prizeType: prizes.nft, weight: 10, value: 27},  // Epic #6
             {prizeType: prizes.nft, weight: 10, value: 28},  // Epic #7
         ]);
+
+        await tx.wait();
     })
 
     await run("Setup 'Everyday' box", async () => {
         const everydayBoxId = await box.everydayBoxId();
-        await box.createOrUpdateBox(everydayBoxId, 0, [
+        const tx = await box.createOrUpdateBox(everydayBoxId, 0, [
             // Slots
             {prizeType: prizes.slots, weight: 100000, value: 1}, // 1 Slot
             {prizeType: prizes.slots, weight: 25000, value: 2},  // 2 Slots
@@ -166,33 +174,42 @@ async function main() {
             {prizeType: prizes.nft, weight: 2, value: 27},  // Epic #6
             {prizeType: prizes.nft, weight: 1, value: 28},  // Epic #7
         ]);
+        await tx.wait();
     })
 
     // Grant roles
     // Bank: BANKER_ROLE
     await run("Grant HoneyBank.BANKER_ROLE to HoneypotGame and HoneyBox", async () => {
         const bankerRole = await bank.BANKER_ROLE();
-        await bank.grantRole(bankerRole, game.address);
-        await bank.grantRole(bankerRole, box.address);
+        const tx1 = await bank.grantRole(bankerRole, game.address);
+        await tx1.wait();
+
+        const tx2 = await bank.grantRole(bankerRole, box.address);
+        await tx2.wait();
     })
 
     // Land: OPERATOR_ROLE
     await run("Grant ApiaryLand.OPERATOR_ROLE to HoneypotGame and HoneyBox", async() => {
         const operatorRole = await land.OPERATOR_ROLE();
-        await land.grantRole(operatorRole, game.address);
-        await land.grantRole(operatorRole, box.address);
+        const tx1 = await land.grantRole(operatorRole, game.address);
+        await tx1.wait();
+
+        const tx2 = await land.grantRole(operatorRole, box.address);
+        await tx2.wait();
     })
 
     // Bee Item: OPERATOR_ROLE
     await run("Grant BeeItem.OPERATOR_ROLE to HoneypotGame", async() => {
         const itemOperatorRole = await item.OPERATOR_ROLE();
-        await item.grantRole(itemOperatorRole, game.address);
+        const tx = await item.grantRole(itemOperatorRole, game.address);
+        await tx.wait();
     })
 
     // Bee Item: MINTER_ROLE
     await run("Grant BeeItem.MINTER_ROLE to HoneyBox", async() => {
         const minterOperatorRole = await item.MINTER_ROLE();
-        await item.grantRole(minterOperatorRole, box.address);
+        const tx = await item.grantRole(minterOperatorRole, box.address);
+        await tx.wait();
     })
 
     // Save addresses
@@ -212,23 +229,27 @@ async function main() {
     })
 
     await run("Save 'Honey Hunter' set", async () => {
-        await land.saveSet(1, 1000, [1,2,3,4,5,6,7], [1000,1000,1000,1000,1000,1000,1000])
+        const tx = await land.saveSet(1, 1000, [1,2,3,4,5,6,7], [1000,1000,1000,1000,1000,1000,1000])
+        await tx.wait();
     })
 
     await run("Save 'Sweet Bee' set", async () => {
-        await land.saveSet(2, 2000, [8,9,10,11,12,13,14], [2000,2000,2000,2000,2000,2000,2000])
+        const tx = await land.saveSet(2, 2000, [8,9,10,11,12,13,14], [2000,2000,2000,2000,2000,2000,2000])
+        await tx.wait();
     })
 
     await run("Save 'Holly Pot' set", async () => {
-        await land.saveSet(3, 3000, [15,16,17,18,19,20,21], [3000,3000,3000,3000,3000,3000,3000])
+        const tx = await land.saveSet(3, 3000, [15,16,17,18,19,20,21], [3000,3000,3000,3000,3000,3000,3000])
+        await tx.wait();
     })
 
     await run("Save 'Golden Wings' set", async () => {
-        await land.saveSet(4, 4000, [22,23,24,25,26,27,28], [4000,4000,4000,4000,4000,4000,4000])
+        const tx = await land.saveSet(4, 4000, [22,23,24,25,26,27,28], [4000,4000,4000,4000,4000,4000,4000])
+        await tx.wait();
     })
 
     await run("Add items for sale", async () => {
-        await game.addItemsForSale(
+        const tx = await game.addItemsForSale(
             [
                 // Honey Hunter set items
                 1,2,3,4,5,6,7,
@@ -250,6 +271,7 @@ async function main() {
                 eth(20000), eth(50000), eth(75000), eth(12000), eth(160000), eth(200000), eth(250000)
             ]
         )
+        await tx.wait();
     })
 
     console.log("---------------------------------");

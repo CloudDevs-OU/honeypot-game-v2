@@ -31,7 +31,8 @@ module.exports = {
     },
     etherscan: {
         apiKey: {
-            bscTestnet: bscscanApiKey
+            bscTestnet: bscscanApiKey,
+            bsc: bscscanApiKey
         }
     },
     mocha: {
